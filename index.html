@@ -375,6 +375,15 @@ function _objectWithoutProperties(source, excluded) {
 function _objectWithoutPropertiesLoose(source, excluded) {
   return _objectWithoutProperties(source, excluded);
 }
+function _createForOfIteratorHelper(o) {
+  var i = 0, arr = Array.isArray(o) ? o : Array.from(o);
+  return {
+    s: function() {},
+    n: function() { return i < arr.length ? { done: false, value: arr[i++] } : { done: true }; },
+    e: function(err) { throw err; },
+    f: function() {}
+  };
+}
 var _excluded = ["label"], _excluded2 = ["style"], _excluded3 = ["label"], _excluded4 = ["style"];
 
 // ==================== UTILITIES ====================
@@ -434,20 +443,9 @@ var WAREKI = [{
   offset: 1867
 }];
 function seirekiToWareki(year) {
-  var _iterator = _createForOfIteratorHelper(WAREKI),
-    _step;
-  try {
-    for (_iterator.s(); !(_step = _iterator.n()).done;) {
-      var w = _step.value;
-      if (year >= w.start) return {
-        era: w.name,
-        y: year - w.offset
-      };
-    }
-  } catch (err) {
-    _iterator.e(err);
-  } finally {
-    _iterator.f();
+  for (var i = 0; i < WAREKI.length; i++) {
+    var w = WAREKI[i];
+    if (year >= w.start) return { era: w.name, y: year - w.offset };
   }
   return null;
 }
@@ -898,206 +896,91 @@ function OffBadge() {
 // ==================== DOB PICKER ====================
 function DobPicker(_ref7) {
   var value = _ref7.value,
-    ageUnknown = _ref7.ageUnknown,
-    ageDecade = _ref7.ageDecade,
-    onChangeDob = _ref7.onChangeDob,
-    onChangeAgeUnknown = _ref7.onChangeAgeUnknown,
-    onChangeAgeDecade = _ref7.onChangeAgeDecade;
-  // value: "YYYY-MM" or ""
-  var _useState = useState("seireki"),
-    _useState2 = _slicedToArray(_useState, 2),
-    eraMode = _useState2[0],
-    setEraMode = _useState2[1]; // "seireki" | wareki era name
+      ageUnknown = _ref7.ageUnknown,
+      ageDecade = _ref7.ageDecade,
+      onChangeDob = _ref7.onChangeDob,
+      onChangeAgeUnknown = _ref7.onChangeAgeUnknown,
+      onChangeAgeDecade = _ref7.onChangeAgeDecade;
+
   var parts = value ? value.split("-") : ["", ""];
-  var yearVal = parts[0] || "";
-  var monthVal = parts[1] ? parseInt(parts[1]) : "";
+  var yearVal  = parseInt(parts[0]) || 0;
+  var monthVal = parseInt(parts[1]) || 0;
   var currentYear = new Date().getFullYear();
 
-  // 西暦→表示用年（和暦モードなら和暦年）
-  var displayYear = function displayYear() {
-    if (!yearVal) return "";
-    if (eraMode === "seireki") return yearVal;
-    var w = seirekiToWareki(parseInt(yearVal));
-    return w ? String(w.y) : yearVal;
+  var handleYearChange = function(v) {
+    var y = parseInt(v) || 0;
+    if (!y) { onChangeDob(""); return; }
+    onChangeDob(y + "-" + String(monthVal || 1).padStart(2, "0"));
   };
-  var handleYearChange = function handleYearChange(v) {
-    var raw = v.replace(/[^0-9]/g, "");
-    if (!raw) {
-      onChangeDob("");
-      return;
-    }
-    var seireki;
-    if (eraMode === "seireki") {
-      seireki = parseInt(raw);
-    } else {
-      seireki = wareikiToSeireki(eraMode, raw);
-    }
-    if (!seireki || seireki < 1868 || seireki > currentYear) {
-      // 範囲外は年だけ仮セット
-      onChangeDob(raw.length >= 4 ? "".concat(raw, "-").concat(String(monthVal || 1).padStart(2, "0")) : "");
-      return;
-    }
-    onChangeDob("".concat(seireki, "-").concat(String(monthVal || 1).padStart(2, "0")));
-  };
-  var handleMonthChange = function handleMonthChange(v) {
+  var handleMonthChange = function(v) {
+    var m = parseInt(v) || 0;
     if (!yearVal) return;
-    var seireki = yearVal;
-    if (eraMode !== "seireki") seireki = wareikiToSeireki(eraMode, displayYear()) || yearVal;
-    onChangeDob("".concat(seireki, "-").concat(String(v).padStart(2, "0")));
+    onChangeDob(yearVal + "-" + String(m).padStart(2, "0"));
   };
-  var handleEraChange = function handleEraChange(era) {
-    setEraMode(era);
-    // 年の値を変換
-    if (!yearVal) return;
-    if (era === "seireki") {
-      // そのままseireki
-    } else {
-      var w = seirekiToWareki(parseInt(yearVal));
-      // displayYearが変わるだけ、内部はseireki維持
-    }
-  };
-  var seiriLabel = eraMode === "seireki" ? "西暦" : eraMode;
-  var wareki = yearVal ? seirekiToWareki(parseInt(yearVal)) : null;
-  var INPUT_STYLE = {
-    padding: "8px 10px",
-    borderRadius: 8,
+
+  // 年の選択肢（1920〜今年）
+  var yearOptions = [React.createElement("option", { key: 0, value: "" }, "\u5E74")];
+  for (var y = currentYear; y >= 1920; y--) {
+    var w = seirekiToWareki(y);
+    var label = y + "\u5E74" + (w ? " (" + w.era + w.y + ")" : "");
+    yearOptions.push(React.createElement("option", { key: y, value: y }, label));
+  }
+
+  // 月の選択肢
+  var monthOptions = [React.createElement("option", { key: 0, value: "" }, "\u6708")];
+  for (var m = 1; m <= 12; m++) {
+    monthOptions.push(React.createElement("option", { key: m, value: m }, m + "\u6708"));
+  }
+
+  var SS = {
+    padding: "10px 8px", borderRadius: 8,
     border: "1.5px solid #c8e8b8",
     fontFamily: "'Zen Maru Gothic', sans-serif",
-    fontSize: 14,
-    color: "#2a3a1a",
-    background: "#f0faf0",
-    outline: "none"
+    fontSize: 15, color: "#2a3a1a",
+    background: "#f0faf0", outline: "none",
+    cursor: "pointer", WebkitAppearance: "menulist"
   };
-  var SELECT_STYLE = {
-    padding: "8px 8px",
-    borderRadius: 8,
-    border: "1.5px solid #c8e8b8",
-    fontFamily: "'Zen Maru Gothic', sans-serif",
-    fontSize: 13,
-    color: "#2a3a1a",
-    background: "#f0faf0",
-    outline: "none",
-    cursor: "pointer"
-  };
-  return /*#__PURE__*/React.createElement("div", null, !ageUnknown && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 8,
-      alignItems: "center",
-      flexWrap: "wrap",
-      marginBottom: 8
-    }
-  }, /*#__PURE__*/React.createElement("select", {
-    value: eraMode,
-    onChange: function onChange(e) {
-      return handleEraChange(e.target.value);
-    },
-    style: _objectSpread(_objectSpread({}, SELECT_STYLE), {}, {
-      minWidth: 72
-    })
-  }, /*#__PURE__*/React.createElement("option", {
-    value: "seireki"
-  }, "\u897F\u66A6"), WAREKI.map(function (w) {
-    return /*#__PURE__*/React.createElement("option", {
-      key: w.name,
-      value: w.name
-    }, w.name);
-  })), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 4
-    }
-  }, /*#__PURE__*/React.createElement("input", {
-    type: "tel",
-    inputMode: "numeric",
-    pattern: "[0-9]*",
-    value: displayYear(),
-    onChange: function onChange(e) {
-      return handleYearChange(e.target.value);
-    },
-    placeholder: eraMode === "seireki" ? "例：1990" : "例：2",
-    maxLength: 4,
-    style: _objectSpread(_objectSpread({}, INPUT_STYLE), {}, {
-      width: eraMode === "seireki" ? 90 : 60
-    })
-  }), /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 13,
-      color: "#5a7048"
-    }
-  }, "\u5E74")), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 4
-    }
-  }, /*#__PURE__*/React.createElement("select", {
-    value: monthVal,
-    onChange: function onChange(e) {
-      return handleMonthChange(e.target.value);
-    },
-    style: _objectSpread({}, SELECT_STYLE)
-  }, /*#__PURE__*/React.createElement("option", {
-    value: ""
-  }, "\u6708"), _toConsumableArray(Array(12)).map(function (_, i) {
-    return /*#__PURE__*/React.createElement("option", {
-      key: i + 1,
-      value: i + 1
-    }, i + 1);
-  })), /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 13,
-      color: "#5a7048"
-    }
-  }, "\u6708"))), yearVal && monthVal && /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 12,
-      color: "#4e8c36",
-      fontWeight: 600,
-      marginBottom: 6,
-      paddingLeft: 2
-    }
-  }, eraMode !== "seireki" && wareki && "\u897F\u66A6 ".concat(yearVal, "\u5E74 / "), eraMode === "seireki" && wareki && "".concat(wareki.era).concat(wareki.y, "\u5E74 / "), "\u2192 ", ageDisplay(value, false, ""), " \uFF08", decadeDisplay(value, false, ""), "\uFF09")), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 10,
-      flexWrap: "wrap"
-    }
-  }, /*#__PURE__*/React.createElement("label", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 6,
-      fontSize: 13,
-      color: "#5a7048",
-      cursor: "pointer",
-      userSelect: "none"
-    }
-  }, /*#__PURE__*/React.createElement("input", {
-    type: "checkbox",
-    checked: ageUnknown,
-    onChange: function onChange(e) {
-      return onChangeAgeUnknown(e.target.checked);
-    }
-  }), "\u5E74\u9F62\u4E0D\u660E"), ageUnknown && /*#__PURE__*/React.createElement("select", {
-    value: ageDecade,
-    onChange: function onChange(e) {
-      return onChangeAgeDecade(e.target.value);
-    },
-    style: _objectSpread({}, SELECT_STYLE)
-  }, /*#__PURE__*/React.createElement("option", {
-    value: ""
-  }, "\u6B73\u4EE3\u4E0D\u660E"), ["10", "20", "30", "40", "50", "60", "70", "80", "90"].map(function (d) {
-    return /*#__PURE__*/React.createElement("option", {
-      key: d,
-      value: d
-    }, d, "\u6B73\u4EE3");
-  }))));
+  var ce = React.createElement;
+
+  return ce("div", null,
+    !ageUnknown && ce("div", { style: { display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: 8 } },
+      // 年セレクト
+      ce("select", {
+        value: yearVal || "",
+        onChange: function(e) { handleYearChange(e.target.value); },
+        style: Object.assign({}, SS, { minWidth: 150 })
+      }, yearOptions),
+      // 月セレクト
+      ce("select", {
+        value: monthVal || "",
+        onChange: function(e) { handleMonthChange(e.target.value); },
+        style: Object.assign({}, SS, { minWidth: 80 })
+      }, monthOptions)
+    ),
+    // 確定後の表示
+    !ageUnknown && yearVal && monthVal ? ce("div", {
+      style: { fontSize: 12, color: "#4e8c36", fontWeight: 600, marginBottom: 6, paddingLeft: 2 }
+    }, ageDisplay(value, false, "") + "\uFF08" + decadeDisplay(value, false, "") + "\uFF09") : null,
+    // 年齢不明チェック
+    ce("div", { style: { display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" } },
+      ce("label", { style: { display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#5a7048", cursor: "pointer" } },
+        ce("input", { type: "checkbox", checked: !!ageUnknown, onChange: function(e) { onChangeAgeUnknown(e.target.checked); } }),
+        "\u5E74\u9F62\u4E0D\u660E"
+      ),
+      ageUnknown ? ce("select", {
+        value: ageDecade || "",
+        onChange: function(e) { onChangeAgeDecade(e.target.value); },
+        style: SS
+      },
+        ce("option", { value: "" }, "\u6B73\u4EE3\u4E0D\u660E"),
+        ["10","20","30","40","50","60","70","80","90"].map(function(d) {
+          return ce("option", { key: d, value: d }, d + "\u6B73\u4EE3");
+        })
+      ) : null
+    )
+  );
 }
 
-// ==================== CUSTOMER FORM ====================
 function CustomerForm(_ref8) {
   var customer = _ref8.customer,
     menus = _ref8.menus,
@@ -5703,19 +5586,16 @@ function App() {
 <!-- PWA: Service Worker登録 & JSONダウンロード改善 -->
 <script>
 (function() {
-  // Service Worker登録（https環境のみ有効）
+  // Service Worker登録（./sw.js を使用 — Blob URLではscopeが正しく設定されないため）
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
-    var swCode = "\nconst CACHE_NAME = 'client-records-v2';\n\n// install\u30a4\u30d9\u30f3\u30c8: \u30a2\u30d7\u30ea\u672c\u4f53\u306eURL\u3092\u30ad\u30e3\u30c3\u30b7\u30e5\u306b\u4fdd\u5b58\nself.addEventListener('install', function(event) {\n  event.waitUntil(\n    caches.open(CACHE_NAME).then(function(cache) {\n      // self.registration.scope = \u30a2\u30d7\u30ea\u306eURL\uff08\u4f8b: https://xxx.github.io/client-records/\uff09\n      return cache.add(self.registration.scope).catch(function() {\n        // scope\u304c\u30ad\u30e3\u30c3\u30b7\u30e5\u3067\u304d\u306a\u3044\u5834\u5408\u306f / \u3092\u8a66\u307f\u308b\n        return cache.add('/');\n      });\n    }).then(function() {\n      return self.skipWaiting();\n    })\n  );\n});\n\n// activate\u30a4\u30d9\u30f3\u30c8: \u53e4\u3044\u30ad\u30e3\u30c3\u30b7\u30e5\u3092\u524a\u9664\nself.addEventListener('activate', function(event) {\n  event.waitUntil(\n    caches.keys().then(function(keys) {\n      return Promise.all(\n        keys.filter(function(key) { return key !== CACHE_NAME; })\n            .map(function(key) { return caches.delete(key); })\n      );\n    }).then(function() {\n      return self.clients.claim();\n    })\n  );\n});\n\n// fetch\u30a4\u30d9\u30f3\u30c8: \u30ad\u30e3\u30c3\u30b7\u30e5\u512a\u5148\uff08Cache First\uff09\u6226\u7565\n// \u30ad\u30e3\u30c3\u30b7\u30e5\u306b\u3042\u308c\u3070\u5373\u8fd4\u3059 \u2192 \u30aa\u30d5\u30e9\u30a4\u30f3\u3067\u3082\u52d5\u4f5c\n// \u306a\u3051\u308c\u3070\u30cd\u30c3\u30c8\u304b\u3089\u53d6\u5f97\u3057\u3066\u30ad\u30e3\u30c3\u30b7\u30e5\u306b\u4fdd\u5b58\nself.addEventListener('fetch', function(event) {\n  // POST\u30ea\u30af\u30a8\u30b9\u30c8\u306f\u30ad\u30e3\u30c3\u30b7\u30e5\u3057\u306a\u3044\n  if (event.request.method !== 'GET') return;\n\n  event.respondWith(\n    caches.match(event.request).then(function(cachedResponse) {\n      if (cachedResponse) {\n        // \u30ad\u30e3\u30c3\u30b7\u30e5\u30d2\u30c3\u30c8 \u2192 \u305d\u306e\u307e\u307e\u8fd4\u3059\uff08\u30aa\u30d5\u30e9\u30a4\u30f3\u3067\u3082\u52d5\u4f5c\uff09\n        return cachedResponse;\n      }\n      // \u30ad\u30e3\u30c3\u30b7\u30e5\u30df\u30b9 \u2192 \u30cd\u30c3\u30c8\u304b\u3089\u53d6\u5f97\u3057\u3066\u30ad\u30e3\u30c3\u30b7\u30e5\u306b\u4fdd\u5b58\n      return fetch(event.request).then(function(networkResponse) {\n        if (networkResponse && networkResponse.status === 200) {\n          var responseClone = networkResponse.clone();\n          caches.open(CACHE_NAME).then(function(cache) {\n            cache.put(event.request, responseClone);\n          });\n        }\n        return networkResponse;\n      }).catch(function() {\n        // \u30cd\u30c3\u30c8\u3082\u306a\u3057 \u2192 \u7a7a\u306e\u30ec\u30b9\u30dd\u30f3\u30b9\u3092\u8fd4\u3059\uff08\u30a2\u30d7\u30ea\u81ea\u4f53\u306f\u30ad\u30e3\u30c3\u30b7\u30e5\u6e08\u307f\u306a\u306e\u3067\u5f71\u97ff\u306a\u3057\uff09\n        return new Response('', { status: 503 });\n      });\n    })\n  );\n});\n";
-    var blob = new Blob([swCode], { type: 'application/javascript' });
-    var swUrl = URL.createObjectURL(blob);
-    navigator.serviceWorker.register(swUrl).then(function(reg) {
-      console.log('SW registered:', reg.scope);
+    navigator.serviceWorker.register('./sw.js').then(function(reg) {
+      console.log('SW registered, scope:', reg.scope);
     }).catch(function(err) {
       console.log('SW registration failed:', err);
     });
   }
 
-  // AndroidのChromeでJSONファイルをダウンロードできるように
+    // AndroidのChromeでJSONファイルをダウンロードできるように
   // exportToFile が呼ばれた後にBlobダウンロードを試みるパッチ
   // （file://では動かないためモーダルが主な方法）
   window.__isHttps = location.protocol === 'https:';
