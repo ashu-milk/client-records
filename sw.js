@@ -3,7 +3,7 @@ const CACHE_NAME = 'client-records-v3';
 self.addEventListener('install', function(event) {
   event.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
-      return cache.addAll(['./', './index.html']);
+      return cache.addAll(['./', './index.html', './icon-192.png', './icon-512.png']);
     }).then(function() {
       return self.skipWaiting();
     })
