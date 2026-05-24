@@ -379,7 +379,8 @@ var _excluded = ["label"], _excluded2 = ["style"], _excluded3 = ["label"], _excl
 
 // ==================== UTILITIES ====================
 var todayDate = function todayDate() {
-  return new Date();
+  // 日本時間（JST）固定
+  return new Date(new Date().toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" }));
 };
 
 // dob は "YYYY-MM" 形式（年月のみ）
@@ -1008,6 +1009,9 @@ function DobPicker(_ref7) {
       gap: 4
     }
   }, /*#__PURE__*/React.createElement("input", {
+    type: "tel",
+    inputMode: "numeric",
+    pattern: "[0-9]*",
     value: displayYear(),
     onChange: function onChange(e) {
       return handleYearChange(e.target.value);
