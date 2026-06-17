@@ -392,6 +392,15 @@ var todayDate = function todayDate() {
   return new Date(new Date().toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" }));
 };
 
+// toISOString()はUTCに変換されるため深夜0-9時台に日付がずれる問題を回避
+function getLocalDateString(d) {
+  d = d || todayDate();
+  var y = d.getFullYear();
+  var m = String(d.getMonth() + 1).padStart(2, "0");
+  var day = String(d.getDate()).padStart(2, "0");
+  return y + "-" + m + "-" + day;
+}
+
 // dob は "YYYY-MM" 形式（年月のみ）
 function calcAge(dob) {
   if (!dob) return null;
@@ -482,7 +491,10 @@ function calcNextVisit(visits) {
   });
   var last = new Date(sorted[0].date);
   last.setMonth(last.getMonth() + cycle);
-  return last.toISOString().slice(0, 7);
+  // toISOString()はUTC変換されるためタイムゾーンの罠を避けてローカル年月を直接組み立てる
+  var y = last.getFullYear();
+  var m = String(last.getMonth() + 1).padStart(2, "0");
+  return y + "-" + m;
 }
 
 // 次回が5の倍数回目かどうか（visitOffset込みの実績回数+1 が 5の倍数）
@@ -1020,7 +1032,7 @@ function CustomerForm(_ref8) {
     form = _useState4[0],
     setForm = _useState4[1];
   var _useState5 = useState({
-      date: todayDate().toISOString().slice(0, 10),
+      date: getLocalDateString(todayDate()),
       menus: [],
       memo: ""
     }),
@@ -1072,7 +1084,7 @@ function CustomerForm(_ref8) {
   };
   var openAdd = function openAdd() {
     setNewVisit({
-      date: todayDate().toISOString().slice(0, 10),
+      date: getLocalDateString(todayDate()),
       menus: [],
       memo: ""
     });
@@ -1098,7 +1110,7 @@ function CustomerForm(_ref8) {
       setField("visits", [].concat(_toConsumableArray(form.visits), [_objectSpread({}, newVisit)]));
     }
     setNewVisit({
-      date: todayDate().toISOString().slice(0, 10),
+      date: getLocalDateString(todayDate()),
       menus: [],
       memo: ""
     });
@@ -1107,7 +1119,7 @@ function CustomerForm(_ref8) {
   };
   var cancelVisit = function cancelVisit() {
     setNewVisit({
-      date: todayDate().toISOString().slice(0, 10),
+      date: getLocalDateString(todayDate()),
       menus: [],
       memo: ""
     });
@@ -1191,9 +1203,6 @@ function CustomerForm(_ref8) {
       var r = lastNameReading.current || e.data || "";
       if (lastNameKanaAuto && r.trim()) setField("lastNameKana", r.trim());
       lastNameReading.current = "";
-      setTimeout(function () {
-        if (firstNameRef.current) firstNameRef.current.focus();
-      }, 0);
     },
     placeholder: "\u4F8B\uFF1A\u7530\u4E2D",
     style: {
@@ -1229,9 +1238,6 @@ function CustomerForm(_ref8) {
       var r = firstNameReading.current || e.data || "";
       if (firstNameKanaAuto && r.trim()) setField("firstNameKana", r.trim());
       firstNameReading.current = "";
-      setTimeout(function () {
-        if (lastNameKanaRef.current) lastNameKanaRef.current.focus();
-      }, 0);
     },
     placeholder: "\u4F8B\uFF1A\u82B1\u5B50",
     style: {
@@ -2364,9 +2370,6 @@ function NewCustomerWithVisit(_ref12) {
       var r = lastNameReading.current || e.data || "";
       if (lastNameKanaAuto && r.trim()) set("lastNameKana", r.trim());
       lastNameReading.current = "";
-      setTimeout(function () {
-        if (firstNameRef.current) firstNameRef.current.focus();
-      }, 0);
     },
     placeholder: "\u4F8B\uFF1A\u7530\u4E2D",
     style: INPUT
@@ -2393,9 +2396,6 @@ function NewCustomerWithVisit(_ref12) {
       var r = firstNameReading.current || e.data || "";
       if (firstNameKanaAuto && r.trim()) set("firstNameKana", r.trim());
       firstNameReading.current = "";
-      setTimeout(function () {
-        if (lastNameKanaRef.current) lastNameKanaRef.current.focus();
-      }, 0);
     },
     placeholder: "\u4F8B\uFF1A\u82B1\u5B50",
     style: INPUT
@@ -4943,40 +4943,65 @@ function App() {
     style: {
       background: "#f8fef8",
       borderBottom: "1.5px solid #c8e8b8",
-      padding: "0 24px",
-      display: "flex",
-      overflowX: "auto",
+      padding: "0 4px",
+      display: "grid",
+      gridTemplateColumns: "repeat(" + TABS.length + ", 1fr)",
       position: "sticky",
       top: 56,
       zIndex: 99,
       boxShadow: "0 2px 8px rgba(0,0,0,0.06)"
     }
   }, TABS.map(function (t) {
+    var isActive = tab === t.id;
     return /*#__PURE__*/React.createElement("button", {
       key: t.id,
       onClick: function onClick() {
         return setTab(t.id);
       },
       style: {
-        padding: "12px 20px",
+        padding: "8px 2px 7px",
         border: "none",
         background: "none",
         cursor: "pointer",
         fontFamily: "'Zen Maru Gothic', sans-serif",
-        fontSize: 15,
-        fontWeight: tab === t.id ? 700 : 400,
-        color: tab === t.id ? "#6ab04c" : "#5a7048",
-        borderBottom: tab === t.id ? "2.5px solid #6ab04c" : "2.5px solid transparent",
+        fontWeight: isActive ? 700 : 500,
+        color: isActive ? "#6ab04c" : "#5a7048",
+        borderBottom: isActive ? "2.5px solid #6ab04c" : "2.5px solid transparent",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 3,
+        minWidth: 0,
+        width: "100%"
+      }
+    },
+    /*#__PURE__*/React.createElement("span", {
+      style: {
         display: "flex",
         alignItems: "center",
-        gap: 6,
-        whiteSpace: "nowrap",
-        flexShrink: 0
+        justifyContent: "center",
+        width: 26,
+        height: 26,
+        borderRadius: "50%",
+        background: isActive ? "#e8f8d8" : "transparent",
+        color: isActive ? "#6ab04c" : "#9ab888",
+        transition: "background 0.15s"
       }
     }, /*#__PURE__*/React.createElement(Icon, {
       name: t.icon,
-      size: 14
-    }), " ", t.label);
+      size: 16
+    })),
+    /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: "clamp(9px, 2.6vw, 12px)",
+        lineHeight: 1.2,
+        whiteSpace: "nowrap",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        maxWidth: "100%"
+      }
+    }, t.label));
   })), /*#__PURE__*/React.createElement("main", {
     style: {
       maxWidth: 900,
