@@ -4883,6 +4883,10 @@ function App() {
     label: "顧客一覧",
     icon: "users"
   }, {
+    id: "new",
+    label: "新規登録",
+    icon: "plus"
+  }, {
     id: "settings",
     label: "設定",
     icon: "settings"
@@ -4917,29 +4921,7 @@ function App() {
     style: {
       flex: 1
     }
-  }), /*#__PURE__*/React.createElement("button", {
-    onClick: function onClick() {
-      setEditCustomer(null);
-      setShowForm(true);
-    },
-    style: {
-      background: "#2a7020",
-      color: "#fff",
-      border: "none",
-      borderRadius: 8,
-      padding: "7px 16px",
-      fontWeight: 700,
-      fontSize: 13,
-      cursor: "pointer",
-      fontFamily: "'Zen Maru Gothic', sans-serif",
-      display: "flex",
-      alignItems: "center",
-      gap: 6
-    }
-  }, /*#__PURE__*/React.createElement(Icon, {
-    name: "plus",
-    size: 14
-  }), " \u65B0\u898F\u767B\u9332")), /*#__PURE__*/React.createElement("nav", {
+  })), /*#__PURE__*/React.createElement("nav", {
     style: {
       background: "#f8fef8",
       borderBottom: "1.5px solid #c8e8b8",
@@ -4952,11 +4934,16 @@ function App() {
       boxShadow: "0 2px 8px rgba(0,0,0,0.06)"
     }
   }, TABS.map(function (t) {
-    var isActive = tab === t.id;
+    var isActive = t.id === "new" ? false : tab === t.id;
     return /*#__PURE__*/React.createElement("button", {
       key: t.id,
       onClick: function onClick() {
-        return setTab(t.id);
+        if (t.id === "new") {
+          setEditCustomer(null);
+          setShowForm(true);
+          return;
+        }
+        setTab(t.id);
       },
       style: {
         padding: "8px 2px 7px",
@@ -4984,8 +4971,8 @@ function App() {
         width: 26,
         height: 26,
         borderRadius: "50%",
-        background: isActive ? "#e8f8d8" : "transparent",
-        color: isActive ? "#6ab04c" : "#9ab888",
+        background: t.id === "new" ? "#6ab04c" : (isActive ? "#e8f8d8" : "transparent"),
+        color: t.id === "new" ? "#fff" : (isActive ? "#6ab04c" : "#9ab888"),
         transition: "background 0.15s"
       }
     }, /*#__PURE__*/React.createElement(Icon, {
