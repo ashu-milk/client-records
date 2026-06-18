@@ -2179,22 +2179,38 @@ function CustomerDetail(_ref10) {
       gap: 8
     }
   }, sorted.map(function (v, i) {
+    // 降順表示なので累計来店番号 = 全件数 - i（visitOffsetも加算）
+    var visitNo = sorted.length - i + (customer.visitOffset || 0);
+    var is50Off = visitNo > 0 && visitNo % 5 === 0;
     return /*#__PURE__*/React.createElement("div", {
       key: v.date + "_" + (v.menus || []).join(","),
       style: {
         background: "#f8fef8",
         borderRadius: 10,
         padding: "12px 14px",
-        borderLeft: "3px solid #c8e8b8"
+        borderLeft: "3px solid ".concat(is50Off ? "#e83050" : "#c8e8b8")
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        marginBottom: 6,
+        flexWrap: "wrap"
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
         fontSize: 13,
         fontWeight: 700,
-        color: "#2a3a1a",
-        marginBottom: 6
+        color: "#2a3a1a"
       }
-    }, formatDate(v.date)), /*#__PURE__*/React.createElement("div", {
+    }, formatDate(v.date)), /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 10,
+        color: "#9ab888",
+        fontWeight: 600
+      }
+    }, visitNo, "\u56DE\u76EE"), is50Off && /*#__PURE__*/React.createElement(OffBadge, null)), /*#__PURE__*/React.createElement("div", {
       style: {
         display: "flex",
         flexWrap: "wrap",
