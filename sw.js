@@ -1,7 +1,7 @@
-const CACHE_NAME = 'client-records-v4';
+const CACHE_NAME = 'client-records-v5';
 const ASSETS = ['./', './index.html', './icon-192.png', './icon-512.png'];
+const NETWORK_TIMEOUT_MS = 2500; // 電波が悪い時にここで固まらないよう短めのタイムアウト
 
-// インストール時: 一旦アプリ本体をキャッシュ（オフライン用の保険）
 self.addEventListener('install', function(event) {
   event.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
@@ -12,7 +12,6 @@ self.addEventListener('install', function(event) {
   );
 });
 
-// 有効化時: 古いバージョンのキャッシュを削除
 self.addEventListener('activate', function(event) {
   event.waitUntil(
     caches.keys().then(function(keys) {
@@ -26,12 +25,27 @@ self.addEventListener('activate', function(event) {
   );
 });
 
-// フェッチ: ネットワーク優先（常に最新版を取得）→ 失敗時のみキャッシュ（オフライン対応）
+// タイムアウト付きfetch: 電波が悪い時にネットワーク応答を待ち続けて
+// 画面が固まることを防ぐ（一定時間で諦めてキャッシュへ切り替える）
+function fetchWithTimeout(request, ms) {
+  return new Promise(function(resolve, reject) {
+    var timer = setTimeout(function() {
+      reject(new Error('timeout'));
+    }, ms);
+    fetch(request).then(function(res) {
+      clearTimeout(timer);
+      resolve(res);
+    }).catch(function(err) {
+      clearTimeout(timer);
+      reject(err);
+    });
+  });
+}
+
 self.addEventListener('fetch', function(event) {
   if (event.request.method !== 'GET') return;
   event.respondWith(
-    fetch(event.request).then(function(response) {
-      // 取得できたら最新版をキャッシュに保存し直す
+    fetchWithTimeout(event.request, NETWORK_TIMEOUT_MS).then(function(response) {
       if (response && response.status === 200) {
         var clone = response.clone();
         caches.open(CACHE_NAME).then(function(cache) {
@@ -40,7 +54,7 @@ self.addEventListener('fetch', function(event) {
       }
       return response;
     }).catch(function() {
-      // オフライン時のみキャッシュから返す
+      // タイムアウト・オフライン時は即座にキャッシュから返す
       return caches.match(event.request).then(function(cached) {
         return cached || caches.match('./index.html');
       });

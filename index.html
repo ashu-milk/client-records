@@ -930,19 +930,24 @@ function DobPicker(_ref7) {
     onChangeDob(yearVal + "-" + String(m).padStart(2, "0"));
   };
 
-  // 年の選択肢（1920〜今年）
-  var yearOptions = [React.createElement("option", { key: 0, value: "" }, "\u5E74")];
-  for (var y = currentYear; y >= 1920; y--) {
-    var w = seirekiToWareki(y);
-    var label = y + "\u5E74" + (w ? " (" + w.era + w.y + ")" : "");
-    yearOptions.push(React.createElement("option", { key: y, value: y }, label));
-  }
+  // 年・月の選択肢はuseMemoでキャッシュ（フォーム入力ごとに再生成しない）
+  var yearOptions = React.useMemo(function() {
+    var opts = [React.createElement("option", { key: 0, value: "" }, "\u5E74")];
+    for (var y = currentYear; y >= 1920; y--) {
+      var w = seirekiToWareki(y);
+      var label = y + "\u5E74" + (w ? " (" + w.era + w.y + ")" : "");
+      opts.push(React.createElement("option", { key: y, value: y }, label));
+    }
+    return opts;
+  }, [currentYear]);
 
-  // 月の選択肢
-  var monthOptions = [React.createElement("option", { key: 0, value: "" }, "\u6708")];
-  for (var m = 1; m <= 12; m++) {
-    monthOptions.push(React.createElement("option", { key: m, value: m }, m + "\u6708"));
-  }
+  var monthOptions = React.useMemo(function() {
+    var opts = [React.createElement("option", { key: 0, value: "" }, "\u6708")];
+    for (var m = 1; m <= 12; m++) {
+      opts.push(React.createElement("option", { key: m, value: m }, m + "\u6708"));
+    }
+    return opts;
+  }, []);
 
   var SS = {
     padding: "10px 8px", borderRadius: 8,
@@ -1141,11 +1146,13 @@ function CustomerForm(_ref8) {
       kana: fullKana
     }));
   };
-  var sortedVisits = _toConsumableArray(form.visits).sort(function (a, b) {
-    return new Date(b.date) - new Date(a.date);
-  });
-  var cycle = calcVisitCycle(form.visits);
-  var nextVisit = calcNextVisit(form.visits);
+  var sortedVisits = React.useMemo(function() {
+    return _toConsumableArray(form.visits).sort(function (a, b) {
+      return new Date(b.date) - new Date(a.date);
+    });
+  }, [form.visits]);
+  var cycle = React.useMemo(function() { return calcVisitCycle(form.visits); }, [form.visits]);
+  var nextVisit = React.useMemo(function() { return calcNextVisit(form.visits); }, [form.visits]);
   var showOff = isNextVisit50Off(form.visits, form.visitOffset);
   var nextCount = form.visits.length + (form.visitOffset || 0) + 1;
 
@@ -1639,7 +1646,7 @@ function CustomerForm(_ref8) {
     var visitNo = sortedVisits.length - i + (form.visitOffset || 0);
     var is50Off = visitNo > 0 && visitNo % 5 === 0;
     return /*#__PURE__*/React.createElement("div", {
-      key: i,
+      key: v.date + "_" + (v.menus || []).join(","),
       style: {
         background: "#f8fef8",
         border: "1px solid ".concat(is50Off ? "#e83050" : "#c8e8b8"),
@@ -2173,7 +2180,7 @@ function CustomerDetail(_ref10) {
     }
   }, sorted.map(function (v, i) {
     return /*#__PURE__*/React.createElement("div", {
-      key: i,
+      key: v.date + "_" + (v.menus || []).join(","),
       style: {
         background: "#f8fef8",
         borderRadius: 10,
@@ -2737,7 +2744,7 @@ function CalendarDayModal(_ref15) {
     var c = _ref16.customer,
       v = _ref16.visit;
     return /*#__PURE__*/React.createElement("div", {
-      key: i,
+      key: c.id,
       style: {
         display: "flex",
         justifyContent: "space-between",
@@ -3547,7 +3554,7 @@ function CalendarView(_ref19) {
       }
     }, visitors.slice(0, 2).map(function (v, i) {
       return /*#__PURE__*/React.createElement("div", {
-        key: i,
+        key: v.name + "_" + i,
         style: {
           fontSize: 10,
           fontWeight: 600,
@@ -4090,7 +4097,7 @@ function SettingsView(_ref25) {
     }
   }, menuList.map(function (m, i) {
     return /*#__PURE__*/React.createElement("div", {
-      key: i,
+      key: m,
       style: {
         display: "flex",
         justifyContent: "space-between",
@@ -4192,7 +4199,7 @@ function SettingsView(_ref25) {
     }
   }, otherList.map(function (o, i) {
     return /*#__PURE__*/React.createElement("div", {
-      key: i,
+      key: o,
       style: {
         display: "flex",
         justifyContent: "space-between",
