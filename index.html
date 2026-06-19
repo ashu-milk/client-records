@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-title" content="Client Records">
   <meta name="theme-color" content="#b8d820">
   <title>Client Records — 顧客管理</title>
-  <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIkNsaWVudCBSZWNvcmRzIiwKICAic2hvcnRfbmFtZSI6ICLjgqvjg6vjg4YiLAogICJkZXNjcmlwdGlvbiI6ICLpoaflrqLnrqHnkIbjgqLjg5fjg6oiLAogICJzdGFydF91cmwiOiAiLi9pbmRleC5odG1sIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjZjRmZGU4IiwKICAidGhlbWVfY29sb3IiOiAiI2I4ZDgyMCIsCiAgIm9yaWVudGF0aW9uIjogInBvcnRyYWl0IiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiLi9pY29uLTE5Mi5wbmciLAogICAgICAic2l6ZXMiOiAiMTkyeDE5MiIsCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIsCiAgICAgICJwdXJwb3NlIjogImFueSBtYXNrYWJsZSIKICAgIH0sCiAgICB7CiAgICAgICJzcmMiOiAiLi9pY29uLTUxMi5wbmciLAogICAgICAic2l6ZXMiOiAiNTEyeDUxMiIsCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIsCiAgICAgICJwdXJwb3NlIjogImFueSBtYXNrYWJsZSIKICAgIH0KICBdCn0=">
+  <link rel="manifest" href="./manifest.json">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #f4fde8; font-family: 'Zen Maru Gothic', 'Hiragino Sans', 'Noto Sans JP', sans-serif; }
@@ -5623,14 +5623,23 @@ function App() {
 (function() {
   // Service Worker登録（./sw.js を使用 — Blob URLではscopeが正しく設定されないため）
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
-    navigator.serviceWorker.register('./sw.js').then(function(reg) {
+    navigator.serviceWorker.register('./sw.js', { scope: './' }).then(function(reg) {
       console.log('SW registered, scope:', reg.scope);
     }).catch(function(err) {
       console.log('SW registration failed:', err);
     });
   }
 
-    // AndroidのChromeでJSONファイルをダウンロードできるように
+  // ストレージの永続化をリクエスト
+  // → Androidがストレージ容量不足時に「しばらく使っていないアプリ」の
+  //   キャッシュ・データを自動削除する対象から除外してもらうための申請
+  if (navigator.storage && navigator.storage.persist) {
+    navigator.storage.persist().then(function(granted) {
+      console.log('Persistent storage granted:', granted);
+    }).catch(function() {});
+  }
+
+  // AndroidのChromeでJSONファイルをダウンロードできるように
   // exportToFile が呼ばれた後にBlobダウンロードを試みるパッチ
   // （file://では動かないためモーダルが主な方法）
   window.__isHttps = location.protocol === 'https:';

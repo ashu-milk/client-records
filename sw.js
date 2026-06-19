@@ -1,7 +1,7 @@
-const CACHE_NAME = 'client-records-v5';
-const ASSETS = ['./', './index.html', './icon-192.png', './icon-512.png'];
-const NETWORK_TIMEOUT_MS = 2500; // 電波が悪い時にここで固まらないよう短めのタイムアウト
+const CACHE_NAME = 'client-records-v6';
+const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
+// インストール時: アプリ本体を確実にキャッシュ
 self.addEventListener('install', function(event) {
   event.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
@@ -12,6 +12,7 @@ self.addEventListener('install', function(event) {
   );
 });
 
+// 有効化時: 古いバージョンのキャッシュを削除
 self.addEventListener('activate', function(event) {
   event.waitUntil(
     caches.keys().then(function(keys) {
@@ -25,39 +26,31 @@ self.addEventListener('activate', function(event) {
   );
 });
 
-// タイムアウト付きfetch: 電波が悪い時にネットワーク応答を待ち続けて
-// 画面が固まることを防ぐ（一定時間で諦めてキャッシュへ切り替える）
-function fetchWithTimeout(request, ms) {
-  return new Promise(function(resolve, reject) {
-    var timer = setTimeout(function() {
-      reject(new Error('timeout'));
-    }, ms);
-    fetch(request).then(function(res) {
-      clearTimeout(timer);
-      resolve(res);
-    }).catch(function(err) {
-      clearTimeout(timer);
-      reject(err);
-    });
-  });
-}
-
+// フェッチ: Stale-While-Revalidate戦略
+// キャッシュがあれば即座に返す（オフラインでも確実・高速）
+// 同時にバックグラウンドでネットから最新版を取得しキャッシュを更新する
+// → タイムアウト待ちで画面が固まる心配がなく、かつ常に最新版に更新される
 self.addEventListener('fetch', function(event) {
   if (event.request.method !== 'GET') return;
+
   event.respondWith(
-    fetchWithTimeout(event.request, NETWORK_TIMEOUT_MS).then(function(response) {
-      if (response && response.status === 200) {
-        var clone = response.clone();
-        caches.open(CACHE_NAME).then(function(cache) {
-          cache.put(event.request, clone);
-        });
-      }
-      return response;
-    }).catch(function() {
-      // タイムアウト・オフライン時は即座にキャッシュから返す
-      return caches.match(event.request).then(function(cached) {
+    caches.match(event.request).then(function(cached) {
+      var networkFetch = fetch(event.request).then(function(response) {
+        if (response && response.status === 200) {
+          var clone = response.clone();
+          caches.open(CACHE_NAME).then(function(cache) {
+            cache.put(event.request, clone);
+          });
+        }
+        return response;
+      }).catch(function() {
+        // ネットワーク取得に失敗した場合
         return cached || caches.match('./index.html');
       });
+
+      // キャッシュがあれば即座に返却（オフラインでも待たされない）
+      // キャッシュがなければネットワークの結果を待つ（初回アクセス時のみ）
+      return cached || networkFetch;
     })
   );
 });
