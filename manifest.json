@@ -1,6 +1,6 @@
 {
   "name": "Client Records",
-  "short_name": "カルテ",
+  "short_name": "Client Records",
   "description": "顧客管理アプリ",
   "start_url": "./index.html",
   "scope": "./",
