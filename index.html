@@ -905,6 +905,25 @@ function OffBadge() {
   }, "\uD83C\uDF89 50% OFF");
 }
 
+// フリー（指名なし）来店バッジ
+function FreeBadge() {
+  return /*#__PURE__*/React.createElement("span", {
+    style: {
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 3,
+      background: "#fff3e0",
+      color: "#a05830",
+      border: "1px solid #f0c8a0",
+      borderRadius: 10,
+      padding: "2px 9px",
+      fontSize: 11,
+      fontWeight: 700,
+      flexShrink: 0
+    }
+  }, "\uD83C\uDD93 Free");
+}
+
 // ==================== DOB PICKER ====================
 function DobPicker(_ref7) {
   var value = _ref7.value,
@@ -998,6 +1017,98 @@ function DobPicker(_ref7) {
   );
 }
 
+// 来店日ピッカー（年・月・日セレクト＋和暦表示）
+// Androidのネイティブ日付カレンダーは和暦非対応・タップしにくいため
+// 生年月日と同じセレクトボックス方式に統一
+function VisitDatePicker(_ref_vdp) {
+  var value = _ref_vdp.value,
+      onChange = _ref_vdp.onChange;
+
+  var parts = value ? value.split("-") : ["", "", ""];
+  var yearVal  = parseInt(parts[0]) || 0;
+  var monthVal = parseInt(parts[1]) || 0;
+  var dayVal   = parseInt(parts[2]) || 0;
+  var currentYear = new Date().getFullYear();
+
+  var daysInSelectedMonth = function() {
+    if (!yearVal || !monthVal) return 31;
+    return new Date(yearVal, monthVal, 0).getDate();
+  };
+
+  var emit = function(y, m, d) {
+    if (!y || !m || !d) { onChange(""); return; }
+    var maxDay = new Date(y, m, 0).getDate();
+    if (d > maxDay) d = maxDay;
+    onChange(y + "-" + String(m).padStart(2, "0") + "-" + String(d).padStart(2, "0"));
+  };
+
+  var handleYearChange = function(v) { emit(parseInt(v) || 0, monthVal || (new Date().getMonth() + 1), dayVal || 1); };
+  var handleMonthChange = function(v) { emit(yearVal || currentYear, parseInt(v) || 0, dayVal || 1); };
+  var handleDayChange = function(v) { emit(yearVal || currentYear, monthVal || (new Date().getMonth() + 1), parseInt(v) || 0); };
+
+  // 年の選択肢（直近10年前〜1年後まで・来店記録の入力範囲として十分）
+  var yearOptions = React.useMemo(function() {
+    var opts = [React.createElement("option", { key: 0, value: "" }, "\u5E74")];
+    for (var y = currentYear + 1; y >= currentYear - 10; y--) {
+      var w = seirekiToWareki(y);
+      var label = y + "\u5E74" + (w ? " (" + w.era + w.y + ")" : "");
+      opts.push(React.createElement("option", { key: y, value: y }, label));
+    }
+    return opts;
+  }, [currentYear]);
+
+  var monthOptions = React.useMemo(function() {
+    var opts = [React.createElement("option", { key: 0, value: "" }, "\u6708")];
+    for (var m = 1; m <= 12; m++) {
+      opts.push(React.createElement("option", { key: m, value: m }, m + "\u6708"));
+    }
+    return opts;
+  }, []);
+
+  var dayOptions = React.useMemo(function() {
+    var maxDay = daysInSelectedMonth();
+    var opts = [React.createElement("option", { key: 0, value: "" }, "\u65E5")];
+    for (var d = 1; d <= maxDay; d++) {
+      opts.push(React.createElement("option", { key: d, value: d }, d + "\u65E5"));
+    }
+    return opts;
+  }, [yearVal, monthVal]);
+
+  var SS = {
+    padding: "10px 8px", borderRadius: 8,
+    border: "1.5px solid #c8e8b8",
+    fontFamily: "'Zen Maru Gothic', sans-serif",
+    fontSize: 15, color: "#2a3a1a",
+    background: "#f0faf0", outline: "none",
+    cursor: "pointer", WebkitAppearance: "menulist"
+  };
+  var ce = React.createElement;
+  var wareki = yearVal ? seirekiToWareki(yearVal) : null;
+
+  return ce("div", null,
+    ce("div", { style: { display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 6 } },
+      ce("select", {
+        value: yearVal || "",
+        onChange: function(e) { handleYearChange(e.target.value); },
+        style: Object.assign({}, SS, { minWidth: 140 })
+      }, yearOptions),
+      ce("select", {
+        value: monthVal || "",
+        onChange: function(e) { handleMonthChange(e.target.value); },
+        style: Object.assign({}, SS, { minWidth: 72 })
+      }, monthOptions),
+      ce("select", {
+        value: dayVal || "",
+        onChange: function(e) { handleDayChange(e.target.value); },
+        style: Object.assign({}, SS, { minWidth: 72 })
+      }, dayOptions)
+    ),
+    yearVal && monthVal && dayVal ? ce("div", {
+      style: { fontSize: 12, color: "#4e8c36", fontWeight: 600, paddingLeft: 2 }
+    }, wareki ? (wareki.era + wareki.y + "\u5E74" + monthVal + "\u6708" + dayVal + "\u65E5") : "") : null
+  );
+}
+
 function CustomerForm(_ref8) {
   var customer = _ref8.customer,
     menus = _ref8.menus,
@@ -1039,7 +1150,8 @@ function CustomerForm(_ref8) {
   var _useState5 = useState({
       date: getLocalDateString(todayDate()),
       menus: [],
-      memo: ""
+      memo: "",
+      isFree: false
     }),
     _useState6 = _slicedToArray(_useState5, 2),
     newVisit = _useState6[0],
@@ -1091,7 +1203,8 @@ function CustomerForm(_ref8) {
     setNewVisit({
       date: getLocalDateString(todayDate()),
       menus: [],
-      memo: ""
+      memo: "",
+      isFree: false
     });
     setEditKey(null);
     setAddingVisit(true);
@@ -1100,7 +1213,8 @@ function CustomerForm(_ref8) {
     setNewVisit({
       date: v.date,
       menus: _toConsumableArray(v.menus),
-      memo: v.memo
+      memo: v.memo,
+      isFree: !!v.isFree
     });
     setEditKey(visitKey(v));
     setAddingVisit(true);
@@ -1117,7 +1231,8 @@ function CustomerForm(_ref8) {
     setNewVisit({
       date: getLocalDateString(todayDate()),
       menus: [],
-      memo: ""
+      memo: "",
+      isFree: false
     });
     setEditKey(null);
     setAddingVisit(false);
@@ -1126,7 +1241,8 @@ function CustomerForm(_ref8) {
     setNewVisit({
       date: getLocalDateString(todayDate()),
       menus: [],
-      memo: ""
+      memo: "",
+      isFree: false
     });
     setEditKey(null);
     setAddingVisit(false);
@@ -1554,18 +1670,18 @@ function CustomerForm(_ref8) {
       padding: 16,
       marginBottom: 12
     }
-  }, /*#__PURE__*/React.createElement(Input, {
-    label: "\u6765\u5E97\u65E5 *",
-    type: "date",
+  }, /*#__PURE__*/React.createElement("div", {
+    style: { marginBottom: 12 }
+  }, /*#__PURE__*/React.createElement(FieldLabel, null, "\u6765\u5E97\u65E5 *"), /*#__PURE__*/React.createElement(VisitDatePicker, {
     value: newVisit.date,
-    onChange: function onChange(e) {
-      return setNewVisit(function (v) {
-        return _objectSpread(_objectSpread({}, v), {}, {
-          date: e.target.value
+    onChange: function onChange(v) {
+      return setNewVisit(function (prev) {
+        return _objectSpread(_objectSpread({}, prev), {}, {
+          date: v
         });
       });
     }
-  }), /*#__PURE__*/React.createElement("div", {
+  })), /*#__PURE__*/React.createElement("div", {
     style: {
       marginBottom: 12
     }
@@ -1607,7 +1723,28 @@ function CustomerForm(_ref8) {
       minHeight: 60,
       marginBottom: 12
     }
-  }), /*#__PURE__*/React.createElement("div", {
+  }), /*#__PURE__*/React.createElement("label", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 6,
+      fontSize: 13,
+      color: "#a05830",
+      cursor: "pointer",
+      marginBottom: 12,
+      userSelect: "none"
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    checked: !!newVisit.isFree,
+    onChange: function onChange(e) {
+      return setNewVisit(function (v) {
+        return _objectSpread(_objectSpread({}, v), {}, {
+          isFree: e.target.checked
+        });
+      });
+    }
+  }), "\uD83C\uDD93 \u30D5\u30EA\u30FC\uFF08\u6307\u540D\u306A\u3057\uFF09\u3067\u306E\u6765\u5E97"), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 8
@@ -1681,7 +1818,7 @@ function CustomerForm(_ref8) {
         color: "#9ab888",
         fontWeight: 600
       }
-    }, visitNo, "\u56DE\u76EE"), is50Off && /*#__PURE__*/React.createElement(OffBadge, null)), /*#__PURE__*/React.createElement("div", {
+    }, visitNo, "\u56DE\u76EE"), is50Off && /*#__PURE__*/React.createElement(OffBadge, null), v.isFree && /*#__PURE__*/React.createElement(FreeBadge, null)), /*#__PURE__*/React.createElement("div", {
       style: {
         display: "flex",
         flexWrap: "wrap",
@@ -2210,7 +2347,7 @@ function CustomerDetail(_ref10) {
         color: "#9ab888",
         fontWeight: 600
       }
-    }, visitNo, "\u56DE\u76EE"), is50Off && /*#__PURE__*/React.createElement(OffBadge, null)), /*#__PURE__*/React.createElement("div", {
+    }, visitNo, "\u56DE\u76EE"), is50Off && /*#__PURE__*/React.createElement(OffBadge, null), v.isFree && /*#__PURE__*/React.createElement(FreeBadge, null)), /*#__PURE__*/React.createElement("div", {
       style: {
         display: "flex",
         flexWrap: "wrap",
@@ -2267,6 +2404,9 @@ function NewCustomerWithVisit(_ref12) {
     _useState18 = _slicedToArray(_useState17, 2),
     visitMemo = _useState18[0],
     setVisitMemo = _useState18[1];
+  var _useStateFreeNC = useState(false),
+    visitIsFreeNC = _useStateFreeNC[0],
+    setVisitIsFreeNC = _useStateFreeNC[1];
   var _useState19 = useState(true),
     _useState20 = _slicedToArray(_useState19, 2),
     lastNameKanaAuto = _useState20[0],
@@ -2298,7 +2438,7 @@ function NewCustomerWithVisit(_ref12) {
     onSave(_objectSpread(_objectSpread({}, form), {}, {
       name: fullName,
       kana: fullKana
-    }), visitMenus, visitMemo);
+    }), visitMenus, visitMemo, visitIsFreeNC);
   };
   var INPUT = {
     width: "100%",
@@ -2619,7 +2759,24 @@ function NewCustomerWithVisit(_ref12) {
       minHeight: 50,
       resize: "vertical"
     })
-  })), /*#__PURE__*/React.createElement("button", {
+  }), /*#__PURE__*/React.createElement("label", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 6,
+      fontSize: 12,
+      color: "#a05830",
+      cursor: "pointer",
+      marginTop: 8,
+      userSelect: "none"
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    checked: visitIsFreeNC,
+    onChange: function onChange(e) {
+      return setVisitIsFreeNC(e.target.checked);
+    }
+  }), "\uD83C\uDD93 \u30D5\u30EA\u30FC\uFF08\u6307\u540D\u306A\u3057\uFF09\u3067\u306E\u6765\u5E97")), /*#__PURE__*/React.createElement("button", {
     onClick: handleSave,
     style: {
       width: "100%",
@@ -2675,6 +2832,9 @@ function CalendarDayModal(_ref15) {
     _useState30 = _slicedToArray(_useState29, 2),
     visitMemo = _useState30[0],
     setVisitMemo = _useState30[1];
+  var _useStateFree = useState(false),
+    visitIsFree = _useStateFree[0],
+    setVisitIsFree = _useStateFree[1];
   var _useState31 = useState(""),
     _useState32 = _slicedToArray(_useState31, 2),
     customerSearch = _useState32[0],
@@ -2703,6 +2863,7 @@ function CalendarDayModal(_ref15) {
     setSelectedCustomer(c);
     setVisitMenus([]);
     setVisitMemo("");
+    setVisitIsFree(false);
     setStep("inputVisit");
   };
   var openEditVisit = function openEditVisit(customer, visit) {
@@ -2712,17 +2873,20 @@ function CalendarDayModal(_ref15) {
     });
     setVisitMenus(_toConsumableArray(visit.menus));
     setVisitMemo(visit.memo || "");
+    setVisitIsFree(!!visit.isFree);
     setStep("editVisit");
   };
   var handleUpdateVisit = function handleUpdateVisit() {
     if (!editTarget) return;
     onUpdateVisit(editTarget.customer.id, editTarget.visit, _objectSpread(_objectSpread({}, editTarget.visit), {}, {
       menus: visitMenus,
-      memo: visitMemo
+      memo: visitMemo,
+      isFree: visitIsFree
     }));
     setEditTarget(null);
     setVisitMenus([]);
     setVisitMemo("");
+    setVisitIsFree(false);
     setStep("list");
   };
   var handleSave = function handleSave() {
@@ -2730,12 +2894,14 @@ function CalendarDayModal(_ref15) {
     onAddVisit(selectedCustomer.id, {
       date: dateStr,
       menus: visitMenus,
-      memo: visitMemo
+      memo: visitMemo,
+      isFree: visitIsFree
     });
     setStep("list");
     setSelectedCustomer(null);
     setVisitMenus([]);
     setVisitMemo("");
+    setVisitIsFree(false);
   };
   var isFemSel = (selectedCustomer === null || selectedCustomer === void 0 ? void 0 : selectedCustomer.gender) === "female";
   return /*#__PURE__*/React.createElement(Modal, {
@@ -2803,7 +2969,7 @@ function CalendarDayModal(_ref15) {
         textDecoration: "underline",
         textDecorationColor: "#c8e8b8"
       }
-    }, c.name)), /*#__PURE__*/React.createElement("div", {
+    }, c.name), v.isFree && /*#__PURE__*/React.createElement(FreeBadge, null)), /*#__PURE__*/React.createElement("div", {
       style: {
         display: "flex",
         flexWrap: "wrap",
@@ -3154,7 +3320,24 @@ function CalendarDayModal(_ref15) {
       resize: "vertical",
       minHeight: 72
     }
-  })), /*#__PURE__*/React.createElement("div", {
+  }), /*#__PURE__*/React.createElement("label", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 6,
+      fontSize: 12,
+      color: "#a05830",
+      cursor: "pointer",
+      marginBottom: 16,
+      userSelect: "none"
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    checked: visitIsFree,
+    onChange: function onChange(e) {
+      return setVisitIsFree(e.target.checked);
+    }
+  }), "\uD83C\uDD93 \u30D5\u30EA\u30FC\uFF08\u6307\u540D\u306A\u3057\uFF09\u3067\u306E\u6765\u5E97")), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 8
@@ -3275,7 +3458,24 @@ function CalendarDayModal(_ref15) {
       resize: "vertical",
       minHeight: 72
     }
-  })), /*#__PURE__*/React.createElement("div", {
+  }), /*#__PURE__*/React.createElement("label", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 6,
+      fontSize: 12,
+      color: "#a05830",
+      cursor: "pointer",
+      marginBottom: 16,
+      userSelect: "none"
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    checked: visitIsFree,
+    onChange: function onChange(e) {
+      return setVisitIsFree(e.target.checked);
+    }
+  }), "\uD83C\uDD93 \u30D5\u30EA\u30FC\uFF08\u6307\u540D\u306A\u3057\uFF09\u3067\u306E\u6765\u5E97")), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 8
@@ -3408,7 +3608,8 @@ function CalendarView(_ref19) {
           map[vd].push({
             name: c.lastName || c.name,
             gender: c.gender,
-            totalVisits: totalVisits
+            totalVisits: totalVisits,
+            isFree: !!v.isFree
           });
         }
       });
@@ -3421,6 +3622,12 @@ function CalendarView(_ref19) {
     });
     return map;
   }, [customers, year, month]);
+  // 当月の合計来店客数（のべ来店回数）※フリー（指名なし）来店は含めない
+  var monthlyVisitCount = useMemo(function () {
+    return Object.values(visitMap).reduce(function (sum, arr) {
+      return sum + arr.filter(function (v) { return !v.isFree; }).length;
+    }, 0);
+  }, [visitMap]);
   var prev = function prev() {
     return month === 0 ? (setMonth(11), setYear(function (y) {
       return y - 1;
@@ -3576,13 +3783,13 @@ function CalendarView(_ref19) {
           fontWeight: 600,
           borderRadius: 3,
           padding: "1px 4px",
-          background: v.gender === "female" ? "#eef8c8" : "#c8f0e4",
-          color: v.gender === "female" ? "#a0c840" : "#48b89a",
+          background: v.isFree ? "#fff3e0" : (v.gender === "female" ? "#eef8c8" : "#c8f0e4"),
+          color: v.isFree ? "#a05830" : (v.gender === "female" ? "#a0c840" : "#48b89a"),
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap"
         }
-      }, v.name);
+      }, v.isFree ? "\uD83C\uDD93 " : "", v.name);
     }), visitors.length > 2 && /*#__PURE__*/React.createElement("div", {
       style: {
         fontSize: 9,
@@ -3597,9 +3804,14 @@ function CalendarView(_ref19) {
   })), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
-      gap: 16,
+      alignItems: "center",
       marginTop: 16,
-      justifyContent: "center"
+      justifyContent: "space-between"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 16
     }
   }, [["#eef8c8", "#a0c840", "女性"], ["#c8f0e4", "#48b89a", "男性"]].map(function (_ref20) {
     var _ref21 = _slicedToArray(_ref20, 3),
@@ -3626,7 +3838,21 @@ function CalendarView(_ref19) {
         color: "#5a7048"
       }
     }, label));
-  }))), selectedDate && /*#__PURE__*/React.createElement(CalendarDayModal, {
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "#5a7048",
+      fontWeight: 600,
+      whiteSpace: "nowrap"
+    }
+  }, "当月合計来店客数：", /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: "#6ab04c",
+      fontSize: 15,
+      fontWeight: 800,
+      marginLeft: 4
+    }
+  }, monthlyVisitCount), "名"))), selectedDate && /*#__PURE__*/React.createElement(CalendarDayModal, {
     dateStr: selectedDate,
     customers: customers,
     menus: menus,
@@ -4686,14 +4912,15 @@ function App() {
   };
 
   // カレンダーから新規登録
-  var handleRegisterNew = function handleRegisterNew(dateStr, customerData, visitMenus, visitMemo) {
+  var handleRegisterNew = function handleRegisterNew(dateStr, customerData, visitMenus, visitMemo, visitIsFree) {
     if (customerData) {
       // NewCustomerWithVisit から直接データが来た場合
       var newId = nextId;
       var visit = {
         date: dateStr,
         menus: visitMenus || [],
-        memo: visitMemo || ""
+        memo: visitMemo || "",
+        isFree: !!visitIsFree
       };
       var newCustomer = _objectSpread(_objectSpread({}, customerData), {}, {
         id: newId,
