@@ -516,6 +516,18 @@ function formatDate(dateStr) {
   return dateStr;
 }
 
+// 来店履歴表示用：日付＋曜日（例：2026年6月22日(月)）
+// タイムゾーンの罠を避けるため year/month/day を明示指定してDateを生成する
+var WEEKDAY_JA = ["\u65E5", "\u6708", "\u706B", "\u6C34", "\u6728", "\u91D1", "\u571F"];
+function formatDateWithWeekday(dateStr) {
+  if (!dateStr) return "";
+  var parts = dateStr.split("-");
+  if (parts.length !== 3) return formatDate(dateStr);
+  var y = parseInt(parts[0]), m = parseInt(parts[1]), d = parseInt(parts[2]);
+  var dow = new Date(y, m - 1, d).getDay();
+  return "".concat(y, "\u5E74").concat(m, "\u6708").concat(d, "\u65E5(").concat(WEEKDAY_JA[dow], ")");
+}
+
 // 最終来店から13ヶ月以上経過でDカルテ判定
 function isDormant(customer) {
   var visits = customer.visits || [];
@@ -1812,7 +1824,7 @@ function CustomerForm(_ref8) {
         fontWeight: 700,
         color: "#2a3a1a"
       }
-    }, formatDate(v.date)), /*#__PURE__*/React.createElement("span", {
+    }, formatDateWithWeekday(v.date)), /*#__PURE__*/React.createElement("span", {
       style: {
         fontSize: 10,
         color: "#9ab888",
@@ -2341,7 +2353,7 @@ function CustomerDetail(_ref10) {
         fontWeight: 700,
         color: "#2a3a1a"
       }
-    }, formatDate(v.date)), /*#__PURE__*/React.createElement("span", {
+    }, formatDateWithWeekday(v.date)), /*#__PURE__*/React.createElement("span", {
       style: {
         fontSize: 10,
         color: "#9ab888",
@@ -4132,7 +4144,7 @@ function ForecastView(_ref22) {
         fontSize: 12,
         color: "#9ab888"
       }
-    }, "\u524D\u56DE: ", formatDate(lastVisit.date)))), /*#__PURE__*/React.createElement("div", {
+    }, "\u524D\u56DE: ", formatDateWithWeekday(lastVisit.date)))), /*#__PURE__*/React.createElement("div", {
       style: {
         flexShrink: 0,
         textAlign: "center"
