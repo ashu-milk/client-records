@@ -506,7 +506,7 @@ function isNextVisit50Off(visits, visitOffset) {
 
 // 実績来店回数（履歴 + オフセット）
 function totalVisitCount(visits, visitOffset) {
-  return (visits ? visits.length : 0) + (visitOffset || 0);
+  return Math.max(0, (visits ? visits.length : 0) + (visitOffset || 0));
 }
 function formatDate(dateStr) {
   if (!dateStr) return "";
@@ -1592,7 +1592,7 @@ function CustomerForm(_ref8) {
     }
   }, /*#__PURE__*/React.createElement("button", {
     onClick: function onClick() {
-      return setField("visitOffset", Math.max(0, (form.visitOffset || 0) - 1));
+      return setField("visitOffset", (form.visitOffset || 0) - 1);
     },
     style: {
       width: 30,
@@ -1611,7 +1611,7 @@ function CustomerForm(_ref8) {
     style: {
       fontSize: 18,
       fontWeight: 700,
-      color: "#2a3a1a",
+      color: (form.visitOffset || 0) < 0 ? "#e07060" : "#2a3a1a",
       minWidth: 32,
       textAlign: "center"
     }
