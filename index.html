@@ -1054,14 +1054,14 @@ function VisitDatePicker(_ref_vdp) {
     onChange(y + "-" + String(m).padStart(2, "0") + "-" + String(d).padStart(2, "0"));
   };
 
-  var handleYearChange = function(v) { emit(parseInt(v) || 0, monthVal || (new Date().getMonth() + 1), dayVal || 1); };
-  var handleMonthChange = function(v) { emit(yearVal || currentYear, parseInt(v) || 0, dayVal || 1); };
+  var handleYearChange = function(v) { emit(parseInt(v) || 0, monthVal || 0, dayVal || 0); };
+  var handleMonthChange = function(v) { emit(yearVal || 0, parseInt(v) || 0, dayVal || 0); };
   var handleDayChange = function(v) { emit(yearVal || currentYear, monthVal || (new Date().getMonth() + 1), parseInt(v) || 0); };
 
   // 年の選択肢（直近10年前〜1年後まで・来店記録の入力範囲として十分）
   var yearOptions = React.useMemo(function() {
     var opts = [React.createElement("option", { key: 0, value: "" }, "\u5E74")];
-    for (var y = currentYear + 1; y >= currentYear - 10; y--) {
+    for (var y = currentYear + 1; y >= 1970; y--) {
       var w = seirekiToWareki(y);
       var label = y + "\u5E74" + (w ? " (" + w.era + w.y + ")" : "");
       opts.push(React.createElement("option", { key: y, value: y }, label));
