@@ -1054,14 +1054,14 @@ function VisitDatePicker(_ref_vdp) {
     onChange(y + "-" + String(m).padStart(2, "0") + "-" + String(d).padStart(2, "0"));
   };
 
-  var handleYearChange = function(v) { emit(parseInt(v) || 0, monthVal || (new Date().getMonth() + 1), dayVal || 1); };
-  var handleMonthChange = function(v) { emit(yearVal || currentYear, parseInt(v) || 0, dayVal || 1); };
+  var handleYearChange = function(v) { emit(parseInt(v) || 0, monthVal || 0, dayVal || 0); };
+  var handleMonthChange = function(v) { emit(yearVal || 0, parseInt(v) || 0, dayVal || 0); };
   var handleDayChange = function(v) { emit(yearVal || currentYear, monthVal || (new Date().getMonth() + 1), parseInt(v) || 0); };
 
   // 年の選択肢（直近10年前〜1年後まで・来店記録の入力範囲として十分）
   var yearOptions = React.useMemo(function() {
     var opts = [React.createElement("option", { key: 0, value: "" }, "\u5E74")];
-    for (var y = currentYear + 1; y >= currentYear - 10; y--) {
+    for (var y = currentYear + 1; y >= 1970; y--) {
       var w = seirekiToWareki(y);
       var label = y + "\u5E74" + (w ? " (" + w.era + w.y + ")" : "");
       opts.push(React.createElement("option", { key: y, value: y }, label));
@@ -1503,7 +1503,7 @@ function CustomerForm(_ref8) {
       display: "flex",
       gap: 12
     }
-  }, [["female", "女性", "#a0c840"], ["male", "男性", "#48b89a"]].map(function (_ref9) {
+  }, [["female", "女性", "#c04080"], ["male", "男性", "#48b89a"]].map(function (_ref9) {
     var _ref0 = _slicedToArray(_ref9, 3),
       v = _ref0[0],
       label = _ref0[1],
@@ -1991,7 +1991,7 @@ function CustomerCard(_ref1) {
       cursor: "pointer",
       transition: "box-shadow 0.2s",
       boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-      borderLeft: "4px solid ".concat(isFemale ? "#a0c840" : "#48b89a")
+      borderLeft: "4px solid ".concat(isFemale ? "#c04080" : "#48b89a")
     },
     onMouseEnter: function onMouseEnter(e) {
       return e.currentTarget.style.boxShadow = "0 3px 12px rgba(0,0,0,0.1)";
@@ -2007,7 +2007,7 @@ function CustomerCard(_ref1) {
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
-      color: isFemale ? "#a0c840" : "#48b89a",
+      color: isFemale ? "#c04080" : "#48b89a",
       flexShrink: 0
     }
   }, /*#__PURE__*/React.createElement(Icon, {
@@ -2121,7 +2121,7 @@ function CustomerDetail(_ref10) {
     onClose = _ref10.onClose,
     onEdit = _ref10.onEdit;
   var isFemale = customer.gender === "female";
-  var genderColor = isFemale ? "#a0c840" : "#48b89a";
+  var genderColor = isFemale ? "#c04080" : "#48b89a";
   var visits = customer.visits || [];
   var cycle = calcVisitCycle(visits);
   var next = calcNextVisit(visits);
@@ -2665,7 +2665,7 @@ function NewCustomerWithVisit(_ref12) {
       display: "flex",
       gap: 10
     }
-  }, [["female", "女性", "#a0c840"], ["male", "男性", "#48b89a"]].map(function (_ref13) {
+  }, [["female", "女性", "#c04080"], ["male", "男性", "#48b89a"]].map(function (_ref13) {
     var _ref14 = _slicedToArray(_ref13, 3),
       v = _ref14[0],
       label = _ref14[1],
@@ -2946,7 +2946,7 @@ function CalendarDayModal(_ref15) {
         background: "#f8fef8",
         borderRadius: 10,
         padding: "10px 14px",
-        borderLeft: "3px solid ".concat(c.gender === "female" ? "#a0c840" : "#48b89a")
+        borderLeft: "3px solid ".concat(c.gender === "female" ? "#c04080" : "#48b89a")
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
@@ -2962,7 +2962,7 @@ function CalendarDayModal(_ref15) {
       }
     }, /*#__PURE__*/React.createElement("span", {
       style: {
-        color: c.gender === "female" ? "#a0c840" : "#48b89a"
+        color: c.gender === "female" ? "#c04080" : "#48b89a"
       }
     }, /*#__PURE__*/React.createElement(Icon, {
       name: c.gender === "female" ? "female" : "male",
@@ -3182,7 +3182,7 @@ function CalendarDayModal(_ref15) {
         cursor: "pointer",
         textAlign: "left",
         fontFamily: "'Zen Maru Gothic', sans-serif",
-        borderLeft: "4px solid ".concat(isFem ? "#a0c840" : "#48b89a"),
+        borderLeft: "4px solid ".concat(isFem ? "#c04080" : "#48b89a"),
         transition: "background 0.15s"
       },
       onMouseEnter: function onMouseEnter(e) {
@@ -3193,7 +3193,7 @@ function CalendarDayModal(_ref15) {
       }
     }, /*#__PURE__*/React.createElement("span", {
       style: {
-        color: isFem ? "#a0c840" : "#48b89a",
+        color: isFem ? "#c04080" : "#48b89a",
         flexShrink: 0
       }
     }, /*#__PURE__*/React.createElement(Icon, {
@@ -3242,11 +3242,11 @@ function CalendarDayModal(_ref15) {
       background: "#f8fef8",
       borderRadius: 10,
       marginBottom: 16,
-      borderLeft: "4px solid ".concat(editTarget.customer.gender === "female" ? "#a0c840" : "#48b89a")
+      borderLeft: "4px solid ".concat(editTarget.customer.gender === "female" ? "#c04080" : "#48b89a")
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
-      color: editTarget.customer.gender === "female" ? "#a0c840" : "#48b89a"
+      color: editTarget.customer.gender === "female" ? "#c04080" : "#48b89a"
     }
   }, /*#__PURE__*/React.createElement(Icon, {
     name: editTarget.customer.gender === "female" ? "female" : "male",
@@ -3392,11 +3392,11 @@ function CalendarDayModal(_ref15) {
       background: "#f8fef8",
       borderRadius: 10,
       marginBottom: 16,
-      borderLeft: "4px solid ".concat(isFemSel ? "#a0c840" : "#48b89a")
+      borderLeft: "4px solid ".concat(isFemSel ? "#c04080" : "#48b89a")
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
-      color: isFemSel ? "#a0c840" : "#48b89a"
+      color: isFemSel ? "#c04080" : "#48b89a"
     }
   }, /*#__PURE__*/React.createElement(Icon, {
     name: isFemSel ? "female" : "male",
@@ -3795,8 +3795,8 @@ function CalendarView(_ref19) {
           fontWeight: 600,
           borderRadius: 3,
           padding: "1px 4px",
-          background: v.isFree ? "#fff3e0" : (v.gender === "female" ? "#eef8c8" : "#c8f0e4"),
-          color: v.isFree ? "#a05830" : (v.gender === "female" ? "#a0c840" : "#48b89a"),
+          background: v.isFree ? "#fff3e0" : (v.gender === "female" ? "#fde8f0" : "#c8f0e4"),
+          color: "#1a1a1a",
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap"
@@ -3825,7 +3825,7 @@ function CalendarView(_ref19) {
       display: "flex",
       gap: 16
     }
-  }, [["#eef8c8", "#a0c840", "女性"], ["#c8f0e4", "#48b89a", "男性"]].map(function (_ref20) {
+  }, [["#fde8f0", "#a01050", "女性"], ["#c8f0e4", "#005040", "男性"]].map(function (_ref20) {
     var _ref21 = _slicedToArray(_ref20, 3),
       bg = _ref21[0],
       color = _ref21[1],
@@ -4075,7 +4075,7 @@ function ForecastView(_ref22) {
         background: "#f8fef8",
         borderRadius: 12,
         border: "1.5px solid #c8e8b8",
-        borderLeft: "4px solid ".concat(isFemale ? "#a0c840" : "#48b89a"),
+        borderLeft: "4px solid ".concat(isFemale ? "#c04080" : "#48b89a"),
         padding: "14px 16px",
         cursor: "pointer",
         boxShadow: "0 2px 6px rgba(0,0,0,0.04)",
@@ -4109,7 +4109,7 @@ function ForecastView(_ref22) {
       }
     }, /*#__PURE__*/React.createElement("span", {
       style: {
-        color: isFemale ? "#a0c840" : "#48b89a",
+        color: isFemale ? "#c04080" : "#48b89a",
         flexShrink: 0
       }
     }, /*#__PURE__*/React.createElement(Icon, {
@@ -5255,7 +5255,7 @@ function App() {
       setGenderFilter("female");
       setKanaFilter("all");
     },
-    color: "#a0c840"
+    color: "#c04080"
   }), /*#__PURE__*/React.createElement(GenderTag, {
     label: "\u7537\u6027\uFF08".concat(maleCount, "\u540D\uFF09"),
     active: genderFilter === "male",
