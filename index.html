@@ -4275,11 +4275,6 @@ function SettingsView(_ref25) {
     subPage = _useSub2[0],
     setSubPage = _useSub2[1];
 
-  var _useStateLF = useState({ sizeId: fontSetting.sizeId, familyId: fontSetting.familyId }),
-    _useStateLF2 = _slicedToArray(_useStateLF, 2),
-    localFont = _useStateLF2[0],
-    setLocalFont = _useStateLF2[1];
-
   var _useState49 = useState(_toConsumableArray(menus)),
     _useState50 = _slicedToArray(_useState49, 2),
     menuList = _useState50[0],
@@ -4339,47 +4334,78 @@ function SettingsView(_ref25) {
   }
 
   // ===== フォント設定 =====
+  // 字体・太字・文字サイズのいずれもタップした瞬間にアプリ全体へ即反映される
+  // （保存ボタンは無く、fontSetting は都度そのまま onSaveFontSetting 経由で確定する）
   if (subPage === "font") {
+    var setFont = function(patch) {
+      if (onSaveFontSetting) onSaveFontSetting(Object.assign({}, fontSetting, patch));
+    };
     return ce("div", null,
       BackBtn,
-      ce("div", { style:{ fontSize: fz(16), fontWeight:700, color:"#2a3a1a", marginBottom:20 } }, "\uD83D\uDD24 \u30D5\u30A9\u30F3\u30C8\u8A2D\u5B9A"),
+      ce("div", { style:{ display:"flex", alignItems:"center", gap:10, marginBottom:4 } },
+        ce("span", { style:{ fontSize: fz(20) } }, "\uD83D\uDD24"),
+        ce("span", { style:{ fontSize: fz(16), fontWeight:700, color:"#2a3a1a" } }, "\u30D5\u30A9\u30F3\u30C8")
+      ),
+      ce("div", { style:{ fontSize: fz(12), color:"#9ab888", marginBottom:20 } }, "\u30A2\u30D7\u30EA\u5168\u4F53\u306E\u6587\u5B57\u306E\u898B\u305F\u76EE\u3092\u5909\u66F4\u3057\u307E\u3059"),
+
       ce("div", { style:{ marginBottom:20 } },
-        ce("div", { style:{ fontSize: fz(12), fontWeight:600, color:"#5a7048", marginBottom:8 } }, "\u6587\u5B57\u306E\u5927\u304D\u3055"),
+        ce("div", { style:{ fontSize: fz(12), fontWeight:600, color:"#5a7048", marginBottom:10 } }, "\u5B57\u4F53"),
+        ce("div", { style:{ display:"grid", gridTemplateColumns:"repeat(3, 1fr)", gap:10 } },
+          FONT_FAMILIES.map(function(ff) {
+            var active = fontSetting.familyId === ff.id;
+            return ce("button", {
+              key: ff.id,
+              onClick: function(){ setFont({ familyId: ff.id }); },
+              style: {
+                padding: "16px 6px 12px",
+                borderRadius: 12,
+                cursor: "pointer",
+                textAlign: "center",
+                border: "2px solid " + (active ? "#6ab04c" : "#c8e8b8"),
+                background: active ? "#e8f8d8" : "#f8fef8",
+                fontFamily: "inherit"
+              }
+            },
+              ce("div", { style:{ fontFamily: ff.value, fontSize:26, fontWeight: active?700:400, color: active?"#2a7020":"#2a3a1a", lineHeight:1.15, marginBottom:8 } }, "\u3042\u5B57"),
+              ce("div", { style:{ fontSize: fz(11), color: active?"#2a7020":"#7a9868", fontWeight: active?700:400, lineHeight:1.3 } }, ff.label)
+            );
+          })
+        )
+      ),
+
+      ce("div", { style:{ height:1, background:"#e0f0d0", margin:"20px 0" } }),
+
+      ce("div", { style:{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 } },
+        ce("span", { style:{ fontSize: fz(14), color:"#2a3a1a", fontWeight:600 } }, "\u3059\u3079\u3066\u306E\u6587\u5B57\u3092\u592A\u5B57\u306B\u3059\u308B"),
+        ce("button", {
+          onClick: function(){ setFont({ bold: !fontSetting.bold }); },
+          "aria-label": "\u3059\u3079\u3066\u306E\u6587\u5B57\u3092\u592A\u5B57\u306B\u3059\u308B",
+          "aria-pressed": !!fontSetting.bold,
+          style: {
+            width:52, height:30, borderRadius:15, border:"none", cursor:"pointer", padding:3,
+            background: fontSetting.bold ? "#6ab04c" : "#d8e8c8",
+            display:"flex", justifyContent: fontSetting.bold ? "flex-end" : "flex-start",
+            transition:"background 0.15s", flexShrink:0
+          }
+        },
+          ce("span", { style:{ width:24, height:24, borderRadius:"50%", background:"#fff", boxShadow:"0 1px 3px rgba(0,0,0,0.25)", display:"block" } })
+        )
+      ),
+
+      ce("div", { style:{ height:1, background:"#e0f0d0", margin:"20px 0" } }),
+
+      ce("div", null,
+        ce("div", { style:{ fontSize: fz(12), fontWeight:600, color:"#5a7048", marginBottom:10 } }, "\u6587\u5B57\u30B5\u30A4\u30BA"),
         ce("div", { style:{ display:"flex", gap:8 } },
           FONT_SIZES.map(function(fs) {
-            var active = localFont.sizeId === fs.id;
-            return ce("button", { key:fs.id, onClick:function(){ setLocalFont(function(f){ return Object.assign({},f,{sizeId:fs.id}); }); },
-              style:{ flex:1, padding:"14px 4px", borderRadius:10, cursor:"pointer", border:"2px solid "+(active?"#6ab04c":"#c8e8b8"), background:active?"#6ab04c":"#f8fef8", color:active?"#fff":"#5a7048", fontFamily:"inherit", fontWeight:active?700:400 } },
-              ce("div", { style:{ fontSize:fs.base+4, fontWeight:800, lineHeight:1 } }, fs.label),
-              ce("div", { style:{ fontSize: fz(10), marginTop:4, opacity:0.8 } }, fs.desc)
+            var active = fontSetting.sizeId === fs.id;
+            return ce("button", { key:fs.id, onClick:function(){ setFont({ sizeId: fs.id }); },
+              style:{ flex:1, padding:"13px 4px", borderRadius:10, cursor:"pointer", border:"2px solid "+(active?"#6ab04c":"#c8e8b8"), background:active?"#6ab04c":"#f8fef8", color:active?"#fff":"#5a7048", fontFamily:"inherit", fontSize: fz(13), fontWeight:active?700:400 } },
+              fs.label
             );
           })
         )
-      ),
-      ce("div", { style:{ marginBottom:20 } },
-        ce("div", { style:{ fontSize: fz(12), fontWeight:600, color:"#5a7048", marginBottom:8 } }, "\u66F8\u4F53"),
-        ce("div", { style:{ display:"flex", flexDirection:"column", gap:8 } },
-          FONT_FAMILIES.map(function(ff) {
-            var active = localFont.familyId === ff.id;
-            return ce("button", { key:ff.id, onClick:function(){ setLocalFont(function(f){ return Object.assign({},f,{familyId:ff.id}); }); },
-              style:{ padding:"12px 16px", borderRadius:10, cursor:"pointer", textAlign:"left", border:"2px solid "+(active?"#6ab04c":"#c8e8b8"), background:active?"#e8f8d8":"#f8fef8", display:"flex", alignItems:"center", gap:10 } },
-              ce("span", { style:{ fontFamily:ff.value, fontSize: fz(15), color:"#2a3a1a", fontWeight:active?700:400, flex:1 } }, ff.label),
-              ce("span", { style:{ fontSize: fz(11), color:"#9ab888" } }, ff.desc),
-              active && ce("span", { style:{ color:"#6ab04c", fontWeight:700 } }, "\u2713")
-            );
-          })
-        )
-      ),
-      ce("div", { style:{ background:"#fff", border:"1.5px solid #c8e8b8", borderRadius:10, padding:"14px 16px", marginBottom:20, fontFamily:(FONT_FAMILIES.find(function(f){ return f.id===localFont.familyId; })||FONT_FAMILIES[0]).value, fontSize:(FONT_SIZES.find(function(f){ return f.id===localFont.sizeId; })||FONT_SIZES[1]).base } },
-        ce("div", { style:{ fontSize: fz(10), color:"#9ab888", marginBottom:6 } }, "\u30D7\u30EC\u30D3\u30E5\u30FC"),
-        ce("div", { style:{ fontWeight:700, marginBottom:2 } }, "\u7530\u4E2D \u82B1\u5B50"),
-        ce("div", { style:{ color:"#5a7048" } }, "\u6765\u5E97 12\u56DE \u30FB \u6B21\u56DE\u4E88\u6E2C: 2026\u5E748\u6708"),
-        ce("div", { style:{ color:"#9ab888" } }, "\u524D\u56DE: 2026\u5E742\u670815\u65E5(\u571F)")
-      ),
-      ce("button", {
-        onClick: function() { if (onSaveFontSetting) { onSaveFontSetting(localFont); setSubPage(null); } },
-        style:{ width:"100%", background:"#6ab04c", color:"#fff", border:"none", borderRadius:10, padding:"13px 0", fontSize: fz(15), fontWeight:700, cursor:"pointer", fontFamily:"inherit" }
-      }, "\u4FDD\u5B58\u3057\u3066\u623B\u308B")
+      )
     );
   }
 
@@ -4470,23 +4496,27 @@ var LS_KEYS = {
 };
 
 var FONT_SIZES = [
-  { id: "small",  label: "\u5C0F", base: 12, desc: "\u30B9\u30DE\u30DB\u5C0F\u3055\u3081" },
-  { id: "medium", label: "\u4E2D", base: 14, desc: "\u6A19\u6E96" },
-  { id: "large",  label: "\u5927", base: 17, desc: "\u30BF\u30D6\u30EC\u30C3\u30C8\u5411\u3051" }
+  { id: "small",  label: "\u5C0F",   base: 12 },
+  { id: "medium", label: "\u6A19\u6E96", base: 14 },
+  { id: "large",  label: "\u5927",   base: 17 },
+  { id: "xlarge", label: "\u7279\u5927", base: 20 }
 ];
+// 12\u66F8\u4F53\uFF08\u5B57\u4F53\u540D\u306F\u30E6\u30FC\u30B6\u30FC\u5411\u3051\u306E\u8868\u793A\u540D\u3067\u3001\u5B9F\u4F53\u306FGoogle Fonts\u306E\u65E5\u672C\u8A9E\u5BFE\u5FDC\u30D5\u30A9\u30F3\u30C8\uFF09
 var FONT_FAMILIES = [
-  { id: "zen",       label: "Zen Maru Gothic",  desc: "\u4E38\u30B4\u30B7\u30C3\u30AF\uFF08\u6A19\u6E96\uFF09",        value: "'Zen Maru Gothic', 'Hiragino Sans', sans-serif" },
-  { id: "noto",      label: "Noto Sans JP",     desc: "\u30B4\u30B7\u30C3\u30AF\u4F53\uFF08\u30B7\u30F3\u30D7\u30EB\uFF09",   value: "'Noto Sans JP', 'Hiragino Sans', sans-serif" },
-  { id: "serif",     label: "Noto Serif JP",    desc: "\u660E\u671D\u4F53\uFF08\u843D\u3061\u7740\u304D\uFF09",        value: "'Noto Serif JP', serif" },
-  { id: "kosugi",    label: "Kosugi Maru",      desc: "\u4E38\u30B4\u30B7\u30C3\u30AF\uFF08\u3084\u308F\u3089\u304B\uFF09",   value: "'Kosugi Maru', 'Hiragino Sans', sans-serif" },
-  { id: "mincho",    label: "Zen Old Mincho",   desc: "\u660E\u671D\u4F53\uFF08\u512A\u96C5\u30FB\u30AF\u30E9\u30B7\u30C3\u30AF\uFF09", value: "'Zen Old Mincho', serif" },
-  { id: "yomogi",    label: "Yomogi",           desc: "\u624B\u66F8\u304D\u98A8\uFF08\u30AB\u30B8\u30E5\u30A2\u30EB\uFF09",   value: "'Yomogi', 'Zen Maru Gothic', sans-serif" },
-  { id: "hachi",     label: "Hachi Maru Pop",   desc: "\u98FE\u308A\u6587\u5B57\uFF08\u30DD\u30C3\u30D7\u30FB\u4E38\u6587\u5B57\uFF09", value: "'Hachi Maru Pop', 'Zen Maru Gothic', sans-serif" },
-  { id: "mochiy",    label: "Mochiy Pop One",   desc: "\u98FE\u308A\u6587\u5B57\uFF08\u30DD\u30C3\u30D7\u30FB\u53EF\u611B\u3044\uFF09", value: "'Mochiy Pop One', 'Zen Maru Gothic', sans-serif" },
-  { id: "rampart",   label: "Rampart One",      desc: "\u98FE\u308A\u6587\u5B57\uFF08\u30A4\u30F3\u30D1\u30AF\u30C8\u5927\uFF09", value: "'Rampart One', 'Zen Maru Gothic', sans-serif" },
-  { id: "dotgothic", label: "DotGothic16",      desc: "\u98FE\u308A\u6587\u5B57\uFF08\u30C9\u30C3\u30C8\u30FB\u30EC\u30C8\u30ED\uFF09", value: "'DotGothic16', 'Zen Maru Gothic', sans-serif" }
+  { id: "gothic",      label: "\u30B4\u30B7\u30C3\u30AF\u4F53\uFF08\u6A19\u6E96\uFF09", value: "'Zen Maru Gothic', 'Hiragino Sans', 'Noto Sans JP', sans-serif" },
+  { id: "mincho",      label: "\u660E\u671D\u4F53",                    value: "'Noto Serif JP', 'Hiragino Mincho ProN', serif" },
+  { id: "maru-gothic", label: "\u4E38\u30B4\u30B7\u30C3\u30AF",         value: "'M PLUS Rounded 1c', 'Zen Maru Gothic', sans-serif" },
+  { id: "marumoji",    label: "\u4E38\u6587\u5B57",                    value: "'Kosugi Maru', 'Zen Maru Gothic', sans-serif" },
+  { id: "marumoji2",   label: "\u307E\u308B\u3082\u3058",              value: "'Kiwi Maru', 'Zen Maru Gothic', sans-serif" },
+  { id: "fude",        label: "\u7B46\u6587\u5B57",                    value: "'Yuji Syuku', serif" },
+  { id: "tegaki-pop",  label: "\u624B\u66F8\u304D\u98A8\uFF08\u30DD\u30C3\u30D7\uFF09", value: "'Yomogi', 'Zen Maru Gothic', sans-serif" },
+  { id: "decoration",  label: "\u88C5\u98FE\u4F53",                    value: "'Rampart One', 'Zen Maru Gothic', sans-serif" },
+  { id: "pop",         label: "\u30DD\u30C3\u30D7\u4F53",              value: "'Mochiy Pop One', 'Zen Maru Gothic', sans-serif" },
+  { id: "reggae",      label: "\u30EC\u30B2\u30A8\u4F53",              value: "'Reggae One', 'Zen Maru Gothic', sans-serif" },
+  { id: "dot",         label: "\u30C9\u30C3\u30C8\u6587\u5B57",        value: "'DotGothic16', 'Zen Maru Gothic', sans-serif" },
+  { id: "tegaki-soft", label: "\u624B\u66F8\u304D\u98A8\uFF08\u3084\u308F\u3089\u304B\uFF09", value: "'Zen Kurenaido', 'Zen Maru Gothic', sans-serif" }
 ];
-var DEFAULT_FONT_SETTING = { sizeId: "medium", familyId: "zen" };
+var DEFAULT_FONT_SETTING = { sizeId: "medium", familyId: "gothic", bold: false };
 // アプリ全体の文字サイズ倍率（"中"=14pxを基準とした比率）。
 // ヘッダーのロゴだけは固定サイズのため fz() を通さず据え置いている。
 var FONT_SCALE = 1;
@@ -5011,15 +5041,17 @@ function App() {
   }];
   var _fSize = (FONT_SIZES.find(function(f){ return f.id === fontSetting.sizeId; }) || FONT_SIZES[1]).base;
   var _fFamily = (FONT_FAMILIES.find(function(f){ return f.id === fontSetting.familyId; }) || FONT_FAMILIES[0]).value;
-  FONT_SCALE = _fSize / 14; // "中"(14px)を基準にアプリ全体の文字サイズを拡大縮小（ヘッダーは対象外）
+  var _fWeight = fontSetting.bold ? 700 : 400;
+  FONT_SCALE = _fSize / 14; // "標準"(14px)を基準にアプリ全体の文字サイズを拡大縮小（ヘッダーは対象外）
   return /*#__PURE__*/React.createElement("div", {
     style: {
       minHeight: "100vh",
       background: "#f4fde8",
       fontFamily: _fFamily,
-      fontSize: _fSize
+      fontSize: _fSize,
+      fontWeight: _fWeight
     }
-  }, /*#__PURE__*/React.createElement("style", null, "\n        @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Noto+Serif+JP:wght@400;700&family=Noto+Sans+JP:wght@400;500;700&family=Kosugi+Maru&family=Zen+Old+Mincho:wght@400;600&family=Yomogi&family=Hachi+Maru+Pop&family=Mochiy+Pop+One&family=Rampart+One&family=DotGothic16&display=swap');\n        *, *::before, *::after { box-sizing: border-box; }\n        @keyframes offPulse {\n          0%, 100% { opacity: 1; transform: scale(1); }\n          50% { opacity: 0.85; transform: scale(1.05); }\n        }\n      "), /*#__PURE__*/React.createElement("header", {
+  }, /*#__PURE__*/React.createElement("style", null, "\n        @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Noto+Serif+JP:wght@400;700&family=M+PLUS+Rounded+1c:wght@400;500;700;900&family=Kosugi+Maru&family=Kiwi+Maru:wght@300;400;500&family=Yuji+Syuku&family=Yomogi&family=Rampart+One&family=Mochiy+Pop+One&family=Reggae+One&family=DotGothic16&family=Zen+Kurenaido&display=swap');\n        *, *::before, *::after { box-sizing: border-box; }\n        @keyframes offPulse {\n          0%, 100% { opacity: 1; transform: scale(1); }\n          50% { opacity: 0.85; transform: scale(1.05); }\n        }\n      "), /*#__PURE__*/React.createElement("header", {
     style: {
       background: "#b8d820",
       padding: "0 24px",
@@ -5537,9 +5569,10 @@ function App() {
     others: others,
     fontSetting: fontSetting,
     onSaveFontSetting: function onSaveFontSetting(fs) {
+      // 字体・太字・サイズいずれもタップした瞬間に即反映されるため、
+      // 都度トーストは出さずサイレントに保存する
       setFontSetting(fs);
       saveStorage(LS_KEYS.fontSetting, fs);
-      showToast("表示設定を保存しました");
     },
     onSaveMenus: function onSaveMenus(m) {
       setMenus(m);
