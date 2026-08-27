@@ -1,4 +1,4 @@
-const CACHE_NAME = 'client-records-v9';
+const CACHE_NAME = 'client-records-v10';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-48.png', './icon-72.png', './icon-96.png', './icon-144.png', './icon-192.png', './icon-512.png'];
 
 // インストール時: アプリ本体を確実にキャッシュ
