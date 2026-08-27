@@ -4503,18 +4503,18 @@ var FONT_SIZES = [
 ];
 // 12\u66F8\u4F53\uFF08\u5B57\u4F53\u540D\u306F\u30E6\u30FC\u30B6\u30FC\u5411\u3051\u306E\u8868\u793A\u540D\u3067\u3001\u5B9F\u4F53\u306FGoogle Fonts\u306E\u65E5\u672C\u8A9E\u5BFE\u5FDC\u30D5\u30A9\u30F3\u30C8\uFF09
 var FONT_FAMILIES = [
-  { id: "gothic",      label: "\u30B4\u30B7\u30C3\u30AF\u4F53\uFF08\u6A19\u6E96\uFF09", value: "'Zen Maru Gothic', 'Hiragino Sans', 'Noto Sans JP', sans-serif" },
+  { id: "gothic",      label: "\u30B4\u30B7\u30C3\u30AF\u4F53\uFF08\u6A19\u6E96\uFF09", value: "'Noto Sans JP', 'Hiragino Sans', sans-serif" },
   { id: "mincho",      label: "\u660E\u671D\u4F53",                    value: "'Noto Serif JP', 'Hiragino Mincho ProN', serif" },
   { id: "maru-gothic", label: "\u4E38\u30B4\u30B7\u30C3\u30AF",         value: "'M PLUS Rounded 1c', 'Zen Maru Gothic', sans-serif" },
   { id: "marumoji",    label: "\u4E38\u6587\u5B57",                    value: "'Kosugi Maru', 'Zen Maru Gothic', sans-serif" },
-  { id: "marumoji2",   label: "\u307E\u308B\u3082\u3058",              value: "'Kiwi Maru', 'Zen Maru Gothic', sans-serif" },
+  { id: "marumoji2",   label: "\u307E\u308B\u3082\u3058",              value: "'Zen Maru Gothic', 'Hiragino Sans', sans-serif" },
   { id: "fude",        label: "\u7B46\u6587\u5B57",                    value: "'Yuji Syuku', serif" },
-  { id: "tegaki-pop",  label: "\u624B\u66F8\u304D\u98A8\uFF08\u30DD\u30C3\u30D7\uFF09", value: "'Klee One', 'Zen Maru Gothic', sans-serif" },
+  { id: "tegaki-pop",  label: "\u624B\u66F8\u304D\u98A8\uFF08\u30DD\u30C3\u30D7\uFF09", value: "'Hachi Maru Pop', 'Zen Maru Gothic', sans-serif" },
   { id: "decoration",  label: "\u88C5\u98FE\u4F53",                    value: "'Kaisei Decol', 'Noto Serif JP', serif" },
-  { id: "pop",         label: "\u30DD\u30C3\u30D7\u4F53",              value: "'Mochiy Pop One', 'Zen Maru Gothic', sans-serif" },
+  { id: "pop",         label: "\u30DD\u30C3\u30D7\u4F53",              value: "'RocknRoll One', 'Zen Maru Gothic', sans-serif" },
   { id: "reggae",      label: "\u30EC\u30B2\u30A8\u4F53",              value: "'Reggae One', 'Zen Maru Gothic', sans-serif" },
   { id: "dot",         label: "\u30C9\u30C3\u30C8\u6587\u5B57",        value: "'DotGothic16', 'Zen Maru Gothic', sans-serif" },
-  { id: "tegaki-soft", label: "\u624B\u66F8\u304D\u98A8\uFF08\u3084\u308F\u3089\u304B\uFF09", value: "'Zen Kurenaido', 'Zen Maru Gothic', sans-serif" }
+  { id: "tegaki-soft", label: "\u624B\u66F8\u304D\u98A8\uFF08\u3084\u308F\u3089\u304B\uFF09", value: "'Klee One', 'Zen Maru Gothic', sans-serif" }
 ];
 var DEFAULT_FONT_SETTING = { sizeId: "medium", familyId: "gothic", bold: false };
 // アプリ全体の文字サイズ倍率（"中"=14pxを基準とした比率）。
@@ -5051,7 +5051,7 @@ function App() {
       fontSize: _fSize,
       fontWeight: _fWeight
     }
-  }, /*#__PURE__*/React.createElement("style", null, "\n        @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Noto+Serif+JP:wght@400;700&family=M+PLUS+Rounded+1c:wght@400;500;700;900&family=Kosugi+Maru&family=Kiwi+Maru:wght@300;400;500&family=Yuji+Syuku&family=Klee+One:wght@400;600&family=Kaisei+Decol:wght@400;700&family=Mochiy+Pop+One&family=Reggae+One&family=DotGothic16&family=Zen+Kurenaido&display=swap');\n        *, *::before, *::after { box-sizing: border-box; }\n        @keyframes offPulse {\n          0%, 100% { opacity: 1; transform: scale(1); }\n          50% { opacity: 0.85; transform: scale(1.05); }\n        }\n      "), /*#__PURE__*/React.createElement("header", {
+  }, /*#__PURE__*/React.createElement("style", null, "\n        @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@400;700&family=M+PLUS+Rounded+1c:wght@400;500;700;900&family=Kosugi+Maru&family=Yuji+Syuku&family=Hachi+Maru+Pop&family=Kaisei+Decol:wght@400;700&family=RocknRoll+One&family=Reggae+One&family=DotGothic16&family=Klee+One:wght@400;600&display=swap');\n        *, *::before, *::after { box-sizing: border-box; }\n        @keyframes offPulse {\n          0%, 100% { opacity: 1; transform: scale(1); }\n          50% { opacity: 0.85; transform: scale(1.05); }\n        }\n      "), /*#__PURE__*/React.createElement("header", {
     style: {
       background: "#b8d820",
       padding: "0 24px",
