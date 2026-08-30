@@ -419,13 +419,13 @@ function calcAge(dob) {
   return age;
 }
 function ageDisplay(dob, ageUnknown, ageDecade) {
-  if (ageUnknown) return ageDecade ? "".concat(ageDecade, "\u6B73\u4EE3") : "年齢不明";
+  if (ageUnknown) return ageDecade ? "".concat(ageDecade, "\u4EE3") : "年齢不明";
   if (!dob) return "—";
   var age = calcAge(dob);
-  return age !== null ? "".concat(age, "\u6B73\u3054\u308D") : "—";
+  return age !== null ? "".concat(age, "\u6B73") : "—";
 }
 function decadeDisplay(dob, ageUnknown, ageDecade) {
-  if (ageUnknown) return ageDecade ? "".concat(ageDecade, "\u6B73\u4EE3") : "年齢不明";
+  if (ageUnknown) return ageDecade ? "".concat(ageDecade, "\u4EE3") : "年齢不明";
   if (!dob) return "—";
   var age = calcAge(dob);
   if (age === null) return "—";
@@ -1070,9 +1070,9 @@ function DobPicker(_ref7) {
         onChange: function(e) { onChangeAgeDecade(e.target.value); },
         style: SS
       },
-        ce("option", { value: "" }, "\u6B73\u4EE3\u4E0D\u660E"),
+        ce("option", { value: "" }, "\u4EE3\u4E0D\u660E"),
         ["10","20","30","40","50","60","70","80","90"].map(function(d) {
-          return ce("option", { key: d, value: d }, d + "\u6B73\u4EE3");
+          return ce("option", { key: d, value: d }, d + "\u4EE3");
         })
       ) : null
     )
@@ -2072,14 +2072,16 @@ function CustomerCard(_ref1) {
       gap: 6,
       flexWrap: "wrap"
     }
-  }, customer.karteNo && /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("span", {
     style: {
       fontSize: fz(10),
-      color: "#6ab04c",
+      color: customer.karteNo ? "#6ab04c" : "#b8c8a8",
       fontWeight: 600,
-      whiteSpace: "nowrap"
+      whiteSpace: "nowrap",
+      display: "inline-block",
+      minWidth: 30
     }
-  }, "No.", customer.karteNo), /*#__PURE__*/React.createElement("span", {
+  }, customer.karteNo ? "No." + customer.karteNo : "ー"), /*#__PURE__*/React.createElement("span", {
     style: {
       fontFamily: "inherit",
       fontSize: fz(15),
@@ -2101,13 +2103,7 @@ function CustomerCard(_ref1) {
       color: "#5a7048",
       whiteSpace: "nowrap"
     }
-  }, ageDisplay(customer.dob, customer.ageUnknown, customer.ageDecade)), /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: fz(11),
-      color: "#9ab888",
-      whiteSpace: "nowrap"
-    }
-  }, totalVisitCount(visits, customer.visitOffset), "\u56DE"), cycle !== null && next && /*#__PURE__*/React.createElement("span", {
+  }, ageDisplay(customer.dob, customer.ageUnknown, customer.ageDecade)), cycle !== null && next && /*#__PURE__*/React.createElement("span", {
     style: {
       fontSize: fz(10),
       background: "#eef8c8",
