@@ -967,6 +967,25 @@ function OffBadge() {
   }, "\uD83C\uDF89 50% OFF");
 }
 
+// DM不可バッジ
+function DmBadge() {
+  return /*#__PURE__*/React.createElement("span", {
+    style: {
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 3,
+      background: "#4a4a4a",
+      color: "#fff",
+      borderRadius: 10,
+      padding: "2px 9px",
+      fontSize: fz(11),
+      fontWeight: 800,
+      letterSpacing: "0.02em",
+      flexShrink: 0
+    }
+  }, "🚫 DM不可");
+}
+
 // フリー（指名なし）来店バッジ
 function FreeBadge() {
   return /*#__PURE__*/React.createElement("span", {
@@ -1186,6 +1205,7 @@ function CustomerForm(_ref8) {
     ageUnknown: false,
     ageDecade: "",
     note: "",
+    dmProhibited: false,
     visits: [],
     visitOffset: 0,
     karteNo: ""
@@ -1593,7 +1613,32 @@ function CustomerForm(_ref8) {
     onChangeAgeDecade: function onChangeAgeDecade(v) {
       return setField("ageDecade", v);
     }
-  })), /*#__PURE__*/React.createElement(Textarea, {
+  })), /*#__PURE__*/React.createElement("div", {
+    style: { marginBottom: 14 }
+  }, /*#__PURE__*/React.createElement("label", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
+      cursor: "pointer",
+      background: form.dmProhibited ? "#fdeaea" : "#f8fef8",
+      border: "1.5px solid ".concat(form.dmProhibited ? "#e08080" : "#c8e8b8"),
+      borderRadius: 10,
+      padding: "10px 14px"
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    checked: !!form.dmProhibited,
+    onChange: function onChange(e) {
+      return setField("dmProhibited", e.target.checked);
+    }
+  }), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: fz(14),
+      fontWeight: 700,
+      color: form.dmProhibited ? "#c03030" : "#3a6828"
+    }
+  }, "\uD83D\uDEAB DM\u4E0D\u53EF\uFF08DM\u30FB\u6848\u5185\u306E\u9001\u4ED8\u3092\u3057\u306A\u3044\uFF09"))), /*#__PURE__*/React.createElement(Textarea, {
     label: "\u30AB\u30EB\u30C6\u30E1\u30E2\uFF08\u30A2\u30EC\u30EB\u30AE\u30FC\u30FB\u7279\u8A18\u4E8B\u9805\u306A\u3069\uFF09",
     value: form.note,
     onChange: function onChange(e) {
@@ -2089,7 +2134,7 @@ function CustomerCard(_ref1) {
       color: "#2a3a1a",
       whiteSpace: "nowrap"
     }
-  }, customer.name), showOff && /*#__PURE__*/React.createElement(OffBadge, null)), /*#__PURE__*/React.createElement("div", {
+  }, customer.name), showOff && /*#__PURE__*/React.createElement(OffBadge, null), customer.dmProhibited && /*#__PURE__*/React.createElement(DmBadge, null)), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 8,
@@ -2217,7 +2262,7 @@ function CustomerDetail(_ref10) {
       fontWeight: 700,
       color: "#2a3a1a"
     }
-  }, customer.name), showOff && /*#__PURE__*/React.createElement(OffBadge, null)), customer.kana && /*#__PURE__*/React.createElement("div", {
+  }, customer.name), showOff && /*#__PURE__*/React.createElement(OffBadge, null), customer.dmProhibited && /*#__PURE__*/React.createElement(DmBadge, null)), customer.kana && /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: fz(13),
       color: "#9ab888"
@@ -2442,7 +2487,8 @@ function NewCustomerWithVisit(_ref12) {
       dob: "",
       ageUnknown: false,
       ageDecade: "",
-      note: ""
+      note: "",
+      dmProhibited: false
     }),
     _useState14 = _slicedToArray(_useState13, 2),
     form = _useState14[0],
@@ -2747,6 +2793,31 @@ function NewCustomerWithVisit(_ref12) {
       return set("ageDecade", v);
     }
   })), /*#__PURE__*/React.createElement("div", {
+    style: { marginBottom: 14 }
+  }, /*#__PURE__*/React.createElement("label", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
+      cursor: "pointer",
+      background: form.dmProhibited ? "#fdeaea" : "#f8fef8",
+      border: "1.5px solid ".concat(form.dmProhibited ? "#e08080" : "#c8e8b8"),
+      borderRadius: 10,
+      padding: "10px 14px"
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    checked: !!form.dmProhibited,
+    onChange: function onChange(e) {
+      return set("dmProhibited", e.target.checked);
+    }
+  }), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: fz(14),
+      fontWeight: 700,
+      color: form.dmProhibited ? "#c03030" : "#3a6828"
+    }
+  }, "\uD83D\uDEAB DM\u4E0D\u53EF\uFF08DM\u30FB\u6848\u5185\u306E\u9001\u4ED8\u3092\u3057\u306A\u3044\uFF09"))), /*#__PURE__*/React.createElement("div", {
     style: {
       marginBottom: 14
     }
@@ -3245,12 +3316,15 @@ function CalendarDayModal(_ref15) {
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 6,
         fontFamily: "inherit",
         fontSize: fz(14),
         fontWeight: 700,
         color: "#2a3a1a"
       }
-    }, c.name), c.kana && /*#__PURE__*/React.createElement("div", {
+    }, c.name, c.dmProhibited && /*#__PURE__*/React.createElement(DmBadge, null)), c.kana && /*#__PURE__*/React.createElement("div", {
       style: {
         fontSize: fz(11),
         color: "#9ab888"
@@ -3297,7 +3371,7 @@ function CalendarDayModal(_ref15) {
       fontWeight: 700,
       color: "#2a3a1a"
     }
-  }, editTarget.customer.name), /*#__PURE__*/React.createElement("div", {
+  }, editTarget.customer.name), editTarget.customer.dmProhibited && /*#__PURE__*/React.createElement(DmBadge, null), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: fz(11),
       color: "#9ab888"
@@ -3453,7 +3527,7 @@ function CalendarDayModal(_ref15) {
       fontWeight: 700,
       color: "#2a3a1a"
     }
-  }, selectedCustomer.name), isNextVisit50Off(selectedCustomer.visits, selectedCustomer.visitOffset) && /*#__PURE__*/React.createElement(OffBadge, null)), /*#__PURE__*/React.createElement("div", {
+  }, selectedCustomer.name), isNextVisit50Off(selectedCustomer.visits, selectedCustomer.visitOffset) && /*#__PURE__*/React.createElement(OffBadge, null), selectedCustomer.dmProhibited && /*#__PURE__*/React.createElement(DmBadge, null)), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: fz(11),
       color: "#5a7048"
@@ -4105,99 +4179,90 @@ function ForecastView(_ref22) {
       total = _ref23.total,
       showOff = _ref23.showOff;
     var isFemale = c.gender === "female";
-    return /*#__PURE__*/React.createElement("div", {
+    var ce = React.createElement;
+    return ce("div", {
       key: c.id,
       onClick: function onClick() {
         return onViewCustomer(c.id);
       },
       style: {
         background: "#f8fef8",
-        borderRadius: 12,
+        borderRadius: 9,
         border: "1.5px solid #c8e8b8",
-        borderLeft: "4px solid ".concat(isFemale ? "#c04080" : "#48b89a"),
-        padding: "14px 16px",
+        borderLeft: "3px solid ".concat(isFemale ? "#c04080" : "#48b89a"),
+        padding: "7px 10px",
         cursor: "pointer",
-        boxShadow: "0 2px 6px rgba(0,0,0,0.04)",
+        boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
         transition: "box-shadow 0.15s"
       },
       onMouseEnter: function onMouseEnter(e) {
-        return e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.1)";
+        return e.currentTarget.style.boxShadow = "0 3px 10px rgba(0,0,0,0.08)";
       },
       onMouseLeave: function onMouseLeave(e) {
-        return e.currentTarget.style.boxShadow = "0 2px 6px rgba(0,0,0,0.04)";
+        return e.currentTarget.style.boxShadow = "0 1px 4px rgba(0,0,0,0.04)";
       }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: 10
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        flex: 1,
-        minWidth: 0
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 8,
-        flexWrap: "wrap",
-        marginBottom: 6
-      }
-    }, /*#__PURE__*/React.createElement("span", {
-      style: {
-        color: isFemale ? "#c04080" : "#48b89a",
-        flexShrink: 0
-      }
-    }, /*#__PURE__*/React.createElement(Icon, {
-      name: isFemale ? "female" : "male",
-      size: 13
-    })), /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontFamily: "inherit",
-        fontSize: fz(16),
-        fontWeight: 700,
-        color: "#2a3a1a"
-      }
-    }, c.name), showOff && /*#__PURE__*/React.createElement(OffBadge, null)), /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        gap: 12,
-        flexWrap: "wrap",
-        alignItems: "center"
-      }
-    }, /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontSize: fz(12),
-        color: "#5a7048"
-      }
-    }, ageDisplay(c.dob, c.ageUnknown, c.ageDecade), !c.ageUnknown && c.dob ? "\uFF08".concat(decadeDisplay(c.dob, false, ""), "\uFF09") : ""), /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontSize: fz(12),
-        color: "#5a7048"
-      }
-    }, "\u7D2F\u8A08 ", total, "\u56DE"), lastVisit && /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontSize: fz(12),
-        color: "#9ab888"
-      }
-    }, "\u524D\u56DE: ", formatDateWithWeekday(lastVisit.date)))), /*#__PURE__*/React.createElement("div", {
-      style: {
-        flexShrink: 0,
-        textAlign: "center"
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        background: "#d8f5e8",
-        color: "#48a870",
-        borderRadius: 10,
-        padding: "4px 12px",
-        fontSize: fz(12),
-        fontWeight: 700
-      }
-    }, "\u5468\u671F ", cycle, "\u30F6\u6708"))));
+    },
+      ce("div", {
+        style: { display: "flex", alignItems: "center", gap: 6 }
+      },
+        ce("span", {
+          style: { color: isFemale ? "#c04080" : "#48b89a", flexShrink: 0, display: "flex" }
+        }, ce(Icon, { name: isFemale ? "female" : "male", size: 12 })),
+        ce("span", {
+          style: {
+            fontSize: fz(9),
+            color: c.karteNo ? "#6ab04c" : "#b8c8a8",
+            fontWeight: 600,
+            whiteSpace: "nowrap",
+            display: "inline-block",
+            minWidth: 26,
+            flexShrink: 0
+          }
+        }, c.karteNo ? "No." + c.karteNo : "\u30FC"),
+        ce("span", {
+          style: {
+            fontFamily: "inherit",
+            fontSize: fz(13),
+            fontWeight: 700,
+            color: "#2a3a1a",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis"
+          }
+        }, c.name),
+        showOff && ce(OffBadge, null),
+        c.dmProhibited && ce(DmBadge, null),
+        ce("span", { style: { flex: 1 } }),
+        ce("span", {
+          style: {
+            background: "#d8f5e8",
+            color: "#48a870",
+            borderRadius: 8,
+            padding: "2px 8px",
+            fontSize: fz(10.5),
+            fontWeight: 700,
+            whiteSpace: "nowrap",
+            flexShrink: 0
+          }
+        }, "\u5468\u671F", cycle, "\u30F6\u6708")
+      ),
+      ce("div", {
+        style: {
+          display: "flex",
+          gap: 8,
+          flexWrap: "wrap",
+          alignItems: "center",
+          marginTop: 3,
+          marginLeft: 18
+        }
+      },
+        ce("span", { style: { fontSize: fz(10.5), color: "#9ab888" } },
+          ageDisplay(c.dob, c.ageUnknown, c.ageDecade), !c.ageUnknown && c.dob ? "\uFF08".concat(decadeDisplay(c.dob, false, ""), "\uFF09") : ""
+        ),
+        ce("span", { style: { fontSize: fz(10.5), color: "#9ab888" } }, "\u7D2F\u8A08", total, "\u56DE"),
+        lastVisit && ce("span", { style: { fontSize: fz(10.5), color: "#9ab888" } }, "\u524D\u56DE", formatDateWithWeekday(lastVisit.date))
+      )
+    );
   })));
 }
 
@@ -5724,7 +5789,7 @@ function App() {
         fontWeight: 700,
         color: "#4a2a1a"
       }
-    }, c.name), c.karteNo && /*#__PURE__*/React.createElement("span", {
+    }, c.name), c.dmProhibited && /*#__PURE__*/React.createElement(DmBadge, null), c.karteNo && /*#__PURE__*/React.createElement("span", {
       style: {
         fontSize: fz(10),
         color: "#a08070",
