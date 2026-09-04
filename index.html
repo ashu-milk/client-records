@@ -4225,26 +4225,15 @@ function ForecastView(_ref22) {
             fontSize: fz(13),
             fontWeight: 700,
             color: "#2a3a1a",
-            whiteSpace: "nowrap",
+            flex: "1 1 auto",
+            minWidth: 0,
             overflow: "hidden",
-            textOverflow: "ellipsis"
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap"
           }
         }, c.name),
         showOff && ce(OffBadge, null),
-        c.dmProhibited && ce(DmBadge, null),
-        ce("span", { style: { flex: 1 } }),
-        ce("span", {
-          style: {
-            background: "#d8f5e8",
-            color: "#48a870",
-            borderRadius: 8,
-            padding: "2px 8px",
-            fontSize: fz(10.5),
-            fontWeight: 700,
-            whiteSpace: "nowrap",
-            flexShrink: 0
-          }
-        }, "\u5468\u671F", cycle, "\u30F6\u6708")
+        c.dmProhibited && ce(DmBadge, null)
       ),
       ce("div", {
         style: {
@@ -4260,7 +4249,20 @@ function ForecastView(_ref22) {
           ageDisplay(c.dob, c.ageUnknown, c.ageDecade), !c.ageUnknown && c.dob ? "\uFF08".concat(decadeDisplay(c.dob, false, ""), "\uFF09") : ""
         ),
         ce("span", { style: { fontSize: fz(10.5), color: "#9ab888" } }, "\u7D2F\u8A08", total, "\u56DE"),
-        lastVisit && ce("span", { style: { fontSize: fz(10.5), color: "#9ab888" } }, "\u524D\u56DE", formatDateWithWeekday(lastVisit.date))
+        lastVisit && ce("span", { style: { fontSize: fz(10.5), color: "#9ab888" } }, "\u524D\u56DE", formatDateWithWeekday(lastVisit.date)),
+        ce("span", { style: { flex: 1 } }),
+        ce("span", {
+          style: {
+            background: "#d8f5e8",
+            color: "#48a870",
+            borderRadius: 8,
+            padding: "2px 8px",
+            fontSize: fz(10.5),
+            fontWeight: 700,
+            whiteSpace: "nowrap",
+            flexShrink: 0
+          }
+        }, "\u5468\u671F", cycle, "\u30F6\u6708")
       )
     );
   })));
