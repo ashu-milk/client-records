@@ -500,16 +500,39 @@ function calcNextVisit(visits) {
   return y + "-" + m;
 }
 
+// 来店回数に数える履歴だけを返す（excludeCount が true の来店は回数に含めない）
+function countedVisits(visits) {
+  return (visits || []).filter(function (v) {
+    return !v.excludeCount;
+  });
+}
+
 // 次回が5の倍数回目かどうか（visitOffset込みの実績回数+1 が 5の倍数）
 function isNextVisit50Off(visits, visitOffset) {
   var offset = visitOffset || 0;
-  var nextCount = (visits ? visits.length : 0) + offset + 1;
+  var nextCount = countedVisits(visits).length + offset + 1;
   return nextCount >= 5 && nextCount % 5 === 0;
 }
 
-// 実績来店回数（履歴 + オフセット）
+// 実績来店回数（履歴 + オフセット。回数に含めない来店は除く）
 function totalVisitCount(visits, visitOffset) {
-  return Math.max(0, (visits ? visits.length : 0) + (visitOffset || 0));
+  return Math.max(0, countedVisits(visits).length + (visitOffset || 0));
+}
+
+// 新しい順に並んだ履歴の各来店の「◯回目」番号を返す。回数に含めない来店は null
+function visitNumbersDesc(sortedDesc, visitOffset) {
+  var offset = visitOffset || 0;
+  var counted = 0;
+  var nums = new Array(sortedDesc.length);
+  for (var i = sortedDesc.length - 1; i >= 0; i--) {
+    if (sortedDesc[i].excludeCount) {
+      nums[i] = null;
+    } else {
+      counted += 1;
+      nums[i] = counted + offset;
+    }
+  }
+  return nums;
 }
 function formatDate(dateStr) {
   if (!dateStr) return "";
@@ -939,6 +962,25 @@ function FreeBadge() {
   }, "\uD83C\uDD93 Free");
 }
 
+// 来店回数に含めない来店バッジ
+function ExcludeCountBadge() {
+  return /*#__PURE__*/React.createElement("span", {
+    style: {
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 3,
+      background: "#f0f0ea",
+      color: "#7a7a68",
+      border: "1px solid #d8d8c8",
+      borderRadius: 10,
+      padding: "2px 9px",
+      fontSize: fz(11),
+      fontWeight: 700,
+      flexShrink: 0
+    }
+  }, "🔢 回数外");
+}
+
 // ==================== DOB PICKER ====================
 function DobPicker(_ref7) {
   var value = _ref7.value,
@@ -1229,7 +1271,8 @@ function CustomerForm(_ref8) {
       date: v.date,
       menus: _toConsumableArray(v.menus),
       memo: v.memo,
-      isFree: !!v.isFree
+      isFree: !!v.isFree,
+      excludeCount: !!v.excludeCount
     });
     setEditKey(visitKey(v));
     setAddingVisit(true);
@@ -1285,7 +1328,7 @@ function CustomerForm(_ref8) {
   var cycle = React.useMemo(function() { return calcVisitCycle(form.visits); }, [form.visits]);
   var nextVisit = React.useMemo(function() { return calcNextVisit(form.visits); }, [form.visits]);
   var showOff = isNextVisit50Off(form.visits, form.visitOffset);
-  var nextCount = form.visits.length + (form.visitOffset || 0) + 1;
+  var nextCount = countedVisits(form.visits).length + (form.visitOffset || 0) + 1;
 
   // refs for Tab順カーソル移動
   var firstNameRef = React.useRef(null);
@@ -1661,7 +1704,7 @@ function CustomerForm(_ref8) {
       fontWeight: 600,
       paddingLeft: 4
     }
-  }, "\u5B9F\u7E3E\u6765\u5E97\u56DE\u6570\uFF1A", form.visits.length + (form.visitOffset || 0), "\u56DE\uFF08\u5C65\u6B74", form.visits.length, "\u56DE \uFF0B \u8ABF\u6574", form.visitOffset > 0 ? "+" : "", form.visitOffset, "\u56DE\uFF09")), /*#__PURE__*/React.createElement("div", {
+  }, "\u5B9F\u7E3E\u6765\u5E97\u56DE\u6570\uFF1A", countedVisits(form.visits).length + (form.visitOffset || 0), "\u56DE\uFF08\u5C65\u6B74", countedVisits(form.visits).length, "\u56DE \uFF0B \u8ABF\u6574", form.visitOffset > 0 ? "+" : "", form.visitOffset, "\u56DE\uFF09")), /*#__PURE__*/React.createElement("div", {
     style: {
       marginBottom: 16
     }
@@ -1672,7 +1715,7 @@ function CustomerForm(_ref8) {
       justifyContent: "space-between",
       marginBottom: 10
     }
-  }, /*#__PURE__*/React.createElement(FieldLabel, null, "\u6765\u5E97\u5C65\u6B74\uFF08", form.visits.length, "\u56DE\u8A18\u9332 / \u5B9F\u7E3E", form.visits.length + (form.visitOffset || 0), "\u56DE\uFF09"), /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement(FieldLabel, null, "\u6765\u5E97\u5C65\u6B74\uFF08", form.visits.length, "\u56DE\u8A18\u9332 / \u5B9F\u7E3E", countedVisits(form.visits).length + (form.visitOffset || 0), "\u56DE\uFF09"), /*#__PURE__*/React.createElement("button", {
     onClick: openAdd,
     style: {
       background: "#6ab04c",
@@ -1781,7 +1824,35 @@ function CustomerForm(_ref8) {
         });
       });
     }
-  }), "\uD83C\uDD93 \u30D5\u30EA\u30FC\uFF08\u6307\u540D\u306A\u3057\uFF09\u3067\u306E\u6765\u5E97"), /*#__PURE__*/React.createElement("div", {
+  }), "\uD83C\uDD93 \u30D5\u30EA\u30FC\uFF08\u6307\u540D\u306A\u3057\uFF09\u3067\u306E\u6765\u5E97"), /*#__PURE__*/React.createElement("label", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 6,
+      fontSize: fz(13),
+      color: "#5a7048",
+      cursor: "pointer",
+      marginBottom: 4,
+      userSelect: "none"
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    checked: !!newVisit.excludeCount,
+    onChange: function onChange(e) {
+      return setNewVisit(function (v) {
+        return _objectSpread(_objectSpread({}, v), {}, {
+          excludeCount: e.target.checked
+        });
+      });
+    }
+  }), "🔢 この来店を来店回数に含めない"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: fz(11),
+      color: "#9ab888",
+      marginBottom: 12,
+      paddingLeft: 22
+    }
+  }, "履歴には残りますが、「◯回目」の数え方と5回ごとの50%OFFの対象から外れます"), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 8
@@ -1816,9 +1887,9 @@ function CustomerForm(_ref8) {
       gap: 8
     }
   }, sortedVisits.map(function (v, i) {
-    // 降順表示なので累計来店番号 = 全件数 - i（visitOffsetも加算）
-    var visitNo = sortedVisits.length - i + (form.visitOffset || 0);
-    var is50Off = visitNo > 0 && visitNo % 5 === 0;
+    // 回数に含めない来店は番号なし。含める来店だけを古い順に数えて「◯回目」を振る
+    var visitNo = visitNumbersDesc(sortedVisits, form.visitOffset)[i];
+    var is50Off = visitNo !== null && visitNo > 0 && visitNo % 5 === 0;
     return /*#__PURE__*/React.createElement("div", {
       key: v.date + "_" + (v.menus || []).join(","),
       style: {
@@ -1850,13 +1921,13 @@ function CustomerForm(_ref8) {
         fontWeight: 700,
         color: "#2a3a1a"
       }
-    }, formatDateWithWeekday(v.date)), /*#__PURE__*/React.createElement("span", {
+    }, formatDateWithWeekday(v.date)), visitNo !== null && /*#__PURE__*/React.createElement("span", {
       style: {
         fontSize: fz(10),
         color: "#9ab888",
         fontWeight: 600
       }
-    }, visitNo, "\u56DE\u76EE"), is50Off && /*#__PURE__*/React.createElement(OffBadge, null), v.isFree && /*#__PURE__*/React.createElement(FreeBadge, null)), /*#__PURE__*/React.createElement("div", {
+    }, visitNo, "回目"), is50Off && /*#__PURE__*/React.createElement(OffBadge, null), v.isFree && /*#__PURE__*/React.createElement(FreeBadge, null), v.excludeCount && /*#__PURE__*/React.createElement(ExcludeCountBadge, null)), /*#__PURE__*/React.createElement("div", {
       style: {
         display: "flex",
         flexWrap: "wrap",
@@ -2366,9 +2437,9 @@ function CustomerDetail(_ref10) {
       gap: 8
     }
   }, sorted.map(function (v, i) {
-    // 降順表示なので累計来店番号 = 全件数 - i（visitOffsetも加算）
-    var visitNo = sorted.length - i + (customer.visitOffset || 0);
-    var is50Off = visitNo > 0 && visitNo % 5 === 0;
+    // 回数に含めない来店は番号なし。含める来店だけを古い順に数えて「◯回目」を振る
+    var visitNo = visitNumbersDesc(sorted, customer.visitOffset)[i];
+    var is50Off = visitNo !== null && visitNo > 0 && visitNo % 5 === 0;
     return /*#__PURE__*/React.createElement("div", {
       key: v.date + "_" + (v.menus || []).join(","),
       style: {
@@ -2391,13 +2462,13 @@ function CustomerDetail(_ref10) {
         fontWeight: 700,
         color: "#2a3a1a"
       }
-    }, formatDateWithWeekday(v.date)), /*#__PURE__*/React.createElement("span", {
+    }, formatDateWithWeekday(v.date)), visitNo !== null && /*#__PURE__*/React.createElement("span", {
       style: {
         fontSize: fz(10),
         color: "#9ab888",
         fontWeight: 600
       }
-    }, visitNo, "\u56DE\u76EE"), is50Off && /*#__PURE__*/React.createElement(OffBadge, null), v.isFree && /*#__PURE__*/React.createElement(FreeBadge, null)), /*#__PURE__*/React.createElement("div", {
+    }, visitNo, "回目"), is50Off && /*#__PURE__*/React.createElement(OffBadge, null), v.isFree && /*#__PURE__*/React.createElement(FreeBadge, null), v.excludeCount && /*#__PURE__*/React.createElement(ExcludeCountBadge, null)), /*#__PURE__*/React.createElement("div", {
       style: {
         display: "flex",
         flexWrap: "wrap",
